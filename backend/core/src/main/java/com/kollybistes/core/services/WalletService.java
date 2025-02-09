@@ -5,11 +5,10 @@ import com.kollybistes.core.models.BitcoinWallet;
 import com.kollybistes.core.models.User;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
 import com.kollybistes.core.repositories.UserRepository;
-import com.kollybistes.core.rpc.bitcoin.BitcoinRPC;
+import com.kollybistes.core.rpc.BitcoinRPC;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
