@@ -2,9 +2,10 @@ package com.kollybistes.core.api;
 
 import com.kollybistes.core.dtos.WalletDto;
 import com.kollybistes.core.services.WalletService;
-import org.bitcoinj.store.BlockStoreException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.UnknownHostException;
 
 @RestController
 @RequestMapping("/bitcoin/wallets")
@@ -19,8 +20,8 @@ public class BitcoinController {
     }
 
     @GetMapping("/balance/{userId}")
-    public WalletDto getBalance(@PathVariable("userId") Long userId) throws BlockStoreException {
-        return walletService.getBalance(userId);
+    public String getBalance(@PathVariable("userId") Long userId) {
+        return walletService.getWalletBalance(userId);
     }
 
 }

@@ -22,7 +22,6 @@ public class BitcoinWallet {
     private Long balance;
     private String privateKey;
     private String publicKey;
-    private String seedWords;
     @CreationTimestamp
     @Column(name = "created_at")
     private Date createdAt;
