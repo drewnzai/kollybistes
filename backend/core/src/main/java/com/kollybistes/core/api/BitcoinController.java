@@ -8,18 +8,18 @@ import org.springframework.web.bind.annotation.*;
 import java.net.UnknownHostException;
 
 @RestController
-@RequestMapping("/bitcoin/wallets")
+@RequestMapping("/api/bitcoin/")
 public class BitcoinController {
 
     @Autowired
     private WalletService walletService;
 
-    @PostMapping("")
+    @PostMapping("wallet/create")
     public WalletDto createWallet() {
         return walletService.createWallet();
     }
 
-    @GetMapping("/balance/{userId}")
+    @GetMapping("wallet/balance")
     public String getBalance(@PathVariable("userId") Long userId) {
         return walletService.getWalletBalance(userId);
     }
