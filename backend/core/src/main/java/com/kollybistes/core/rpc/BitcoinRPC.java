@@ -9,6 +9,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
@@ -81,7 +82,7 @@ public class BitcoinRPC {
         // Step 5: Create and Save Wallet Entity
         BitcoinWallet wallet = new BitcoinWallet();
         wallet.setAddress(address);
-        wallet.setBalance(0L);  // Initial balance
+        wallet.setBalance(BigDecimal.valueOf(0));  // Initial balance
         wallet.setPrivateKey(privateKey);
         wallet.setPublicKey(publicKey);
         wallet.setUser(user);
@@ -89,9 +90,27 @@ public class BitcoinRPC {
         return wallet;
     }
 
-    public String getAddressBalance(String address, String walletName) {
-        String method = "getaddressbalance";
-        Object[] params = { address };  // The address for which you want to get the balance
-        return sendRequest(method, params, walletName);
+    public BigDecimal getTrustedAddressBalance(String walletName) {
+        String method = "getbalances";
+        String response = sendRequest(method, new Object[]{}, walletName);
+
+        // Parse JSON response
+        JSONObject jsonResponse = new JSONObject(response);
+        JSONObject mine = jsonResponse.getJSONObject("result").getJSONObject("mine");
+
+        // Extract the "trusted" balance
+        return new BigDecimal(mine.get("trusted").toString());
+    }
+
+    public BigDecimal getUnTrustedAddressBalance(String walletName) {
+        String method = "getbalances";
+        String response = sendRequest(method, new Object[]{}, walletName);
+
+        // Parse JSON response
+        JSONObject jsonResponse = new JSONObject(response);
+        JSONObject mine = jsonResponse.getJSONObject("result").getJSONObject("mine");
+
+        // Extract the "trusted" balance
+        return new BigDecimal(mine.get("untrusted_pending").toString());
     }
 }

@@ -4,10 +4,8 @@ import com.kollybistes.core.dtos.WalletDto;
 import com.kollybistes.core.models.BitcoinWallet;
 import com.kollybistes.core.models.User;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
-import com.kollybistes.core.repositories.UserRepository;
 import com.kollybistes.core.rpc.BitcoinRPC;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,12 +13,8 @@ import org.springframework.stereotype.Service;
 public class WalletService {
 
     private final BitcoinWalletRepository bitcoinWalletRepository;
-    private final UserRepository userRepository;
     private final AuthService authService;
     private final BitcoinRPC bitcoinRPC;
-
-    @Value("${bitcoin.network}")
-    private String bitcoinNetwork;
 
     public WalletDto createWallet(){
         User user = authService.getCurrentUser();
@@ -35,10 +29,19 @@ public class WalletService {
                 .build();
     }
 
-    public String getWalletBalance(Long id){
-        User user = userRepository.findById(id).get();
+    public WalletDto getWalletBalance(){
+        User user = authService.getCurrentUser();
 
-        return bitcoinRPC.getAddressBalance(user.getUsername(), user.getUsername());
+        BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user);
+        bitcoinWallet.setBalance(
+                bitcoinRPC.getTrustedAddressBalance(user.getUsername()));
+
+        bitcoinWalletRepository.save(bitcoinWallet);
+
+        return WalletDto.builder()
+                .address(bitcoinWallet.getAddress())
+                .balance(bitcoinWallet.getBalance())
+                .build();
     }
 
 
