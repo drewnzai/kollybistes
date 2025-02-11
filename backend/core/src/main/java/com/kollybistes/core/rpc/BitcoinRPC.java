@@ -11,7 +11,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Base64;
+import java.util.Date;
 
 @Component
 @RequiredArgsConstructor
@@ -85,6 +87,7 @@ public class BitcoinRPC {
         wallet.setBalance(BigDecimal.valueOf(0));  // Initial balance
         wallet.setPrivateKey(privateKey);
         wallet.setPublicKey(publicKey);
+        wallet.setCreatedAt(Date.from(Instant.now()));
         wallet.setUser(user);
 
         return wallet;
