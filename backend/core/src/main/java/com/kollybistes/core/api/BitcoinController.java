@@ -1,8 +1,8 @@
 package com.kollybistes.core.api;
 
-import com.kollybistes.core.dtos.WalletDto;
+import com.kollybistes.core.dtos.APIResponse;
 import com.kollybistes.core.services.WalletService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,19 +10,33 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/bitcoin/")
+@AllArgsConstructor
 public class BitcoinController {
 
-    @Autowired
-    private WalletService walletService;
+    private final WalletService walletService;
 
     @PostMapping("wallet/create")
-    public WalletDto createWallet() {
-        return walletService.createWallet();
+    public Object createWallet() {
+        try {
+            return walletService.createWallet();
+        } catch (Exception e) {
+            return APIResponse
+                    .builder()
+                    .error(e.getMessage())
+                    .build();
+        }
     }
 
     @GetMapping("wallet/balance")
-    public WalletDto getBalance() {
-        return walletService.getWalletBalance();
+    public Object getBalance() {
+        try {
+            return walletService.getWalletBalance();
+        } catch (Exception e) {
+            return APIResponse
+                    .builder()
+                    .error(e.getMessage())
+                    .build();
+        }
     }
 
 }

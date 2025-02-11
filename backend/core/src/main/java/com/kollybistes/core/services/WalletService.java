@@ -16,8 +16,12 @@ public class WalletService {
     private final AuthService authService;
     private final BitcoinRPC bitcoinRPC;
 
-    public WalletDto createWallet(){
+    public WalletDto createWallet() throws Exception {
         User user = authService.getCurrentUser();
+
+        if(bitcoinWalletRepository.existsByUser(user)){
+            throw new Exception("User already has a wallet");
+        }
 
         BitcoinWallet bitcoinWallet = bitcoinRPC.createWallet(user);
 
@@ -29,10 +33,15 @@ public class WalletService {
                 .build();
     }
 
-    public WalletDto getWalletBalance(){
+    public WalletDto getWalletBalance() throws Exception {
         User user = authService.getCurrentUser();
 
-        BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user);
+        BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
+                        .orElseThrow(
+                                () -> {
+                                    return new Exception("User does not have a Bitcoin wallet");
+                                }
+                        );
         bitcoinWallet.setBalance(
                 bitcoinRPC.getTrustedAddressBalance(user.getUsername()));
 

@@ -4,6 +4,10 @@ import com.kollybistes.core.models.BitcoinWallet;
 import com.kollybistes.core.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface BitcoinWalletRepository extends JpaRepository<BitcoinWallet, Long> {
-    BitcoinWallet findByUser(User user);
+    Optional<BitcoinWallet> findByUser(User user);
+
+    boolean existsByUser(User user);
 }
