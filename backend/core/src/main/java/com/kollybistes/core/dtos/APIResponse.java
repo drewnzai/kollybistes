@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class APIResponse{
-    private String data;
+    private String error;
 }
