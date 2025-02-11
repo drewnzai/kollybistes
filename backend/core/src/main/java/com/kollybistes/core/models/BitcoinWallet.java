@@ -26,9 +26,6 @@ public class BitcoinWallet {
     @CreationTimestamp
     @Column(name = "created_at")
     private Date createdAt;
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private Date updatedAt;
-    @ManyToOne
+    @OneToOne
     private User user;
 }
