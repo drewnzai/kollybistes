@@ -1,7 +1,7 @@
 package com.kollybistes.core.api;
 
 import com.kollybistes.core.dtos.APIResponse;
-import com.kollybistes.core.services.WalletService;
+import com.kollybistes.core.services.BitcoinWalletService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class BitcoinController {
 
-    private final WalletService walletService;
+    private final BitcoinWalletService bitcoinWalletService;
 
     @PostMapping("wallet/create")
     public Object createWallet() {
         try {
-            return walletService.createWallet();
+            return bitcoinWalletService.createWallet();
         } catch (Exception e) {
             return APIResponse
                     .builder()
@@ -30,7 +30,7 @@ public class BitcoinController {
     @GetMapping("wallet/balance")
     public Object getBalance() {
         try {
-            return walletService.getWalletBalance();
+            return bitcoinWalletService.getWalletBalance();
         } catch (Exception e) {
             return APIResponse
                     .builder()
