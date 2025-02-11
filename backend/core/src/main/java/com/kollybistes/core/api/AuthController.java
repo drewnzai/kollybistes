@@ -27,7 +27,7 @@ public class AuthController {
             return null;
         }
         catch(Exception e){
-            return APIResponse.builder().data(e.getMessage()).build();
+            return APIResponse.builder().error(e.getMessage()).build();
         }
 
     }
@@ -52,13 +52,13 @@ public class AuthController {
             return authService.login(loginRequest);
         }
         catch(BadCredentialsException e){
-            return APIResponse.builder().data("Wrong password").build();
+            return APIResponse.builder().error("Wrong password").build();
         }
         catch(UsernameNotFoundException | NullPointerException e){
-            return APIResponse.builder().data("Username does not exist").build();
+            return APIResponse.builder().error("Username does not exist").build();
         }
         catch(Exception e){
-            return APIResponse.builder().data("Verify account").build();
+            return APIResponse.builder().error("Verify account").build();
         }
 
     }
@@ -70,7 +70,7 @@ public class AuthController {
             return authService.refresh(refreshTokenRequest);
         }
         catch(Exception e){
-            return APIResponse.builder().data(e.getMessage()).build();
+            return APIResponse.builder().error(e.getMessage()).build();
         }
 
     }

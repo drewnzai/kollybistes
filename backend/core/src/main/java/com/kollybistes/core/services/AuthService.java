@@ -66,9 +66,13 @@ public class AuthService {
         }
     }
 
-    private void fetchUserAndEnable(VerificationToken verificationToken) {
+    private void fetchUserAndEnable(VerificationToken verificationToken) throws Exception {
         String username = verificationToken.getUser().getUsername();
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username).orElseThrow(
+                () -> {
+                    return new Exception("Could not find user");
+                }
+        );
         user.setEnabled(true);
         userRepository.save(user);
     }
@@ -83,7 +87,7 @@ public class AuthService {
         return token;
     }
 
-    public void verifyAccount(String token) {
+    public void verifyAccount(String token) throws Exception {
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token);
         fetchUserAndEnable(verificationToken);
     }
@@ -92,16 +96,20 @@ public class AuthService {
     public User getCurrentUser() {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.
                 getContext().getAuthentication().getPrincipal();
-        return userRepository.findByUsername(principal.getUsername());
+        return userRepository.findByUsername(principal.getUsername()).get();
     }
 
-    public LoginResponse login(LoginRequest loginRequest) {
+    public LoginResponse login(LoginRequest loginRequest) throws Exception {
         Authentication authenticate = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
                         loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authenticate);
 
-        User user = userRepository.findByUsername(loginRequest.getUsername());
+        User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(
+                () -> {
+                    return new Exception("Could not find user");
+                }
+        );
 
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken(UUID.randomUUID().toString());
@@ -116,7 +124,11 @@ public class AuthService {
 
     public LoginResponse refresh(RefreshTokenRequest refreshTokenRequest) throws Exception {
 
-        User user = userRepository.findByUsername(refreshTokenRequest.getUsername());
+        User user = userRepository.findByUsername(refreshTokenRequest.getUsername()).orElseThrow(
+                () -> {
+                    return new Exception("Could not find user");
+                }
+        );
         RefreshToken refreshToken = refreshTokenRepository.findByTokenAndUser(refreshTokenRequest.getRefreshToken(), user);
 
         boolean isNotExpired = Instant.now().isBefore(refreshToken.getExpirationDate());
