@@ -1,8 +1,9 @@
 package com.kollybistes.core.services;
 
-import com.kollybistes.core.dtos.WalletDto;
-import com.kollybistes.core.models.EthereumWallet;
-import com.kollybistes.core.models.User;
+
+import com.kollybistes.common.dtos.WalletDto;
+import com.kollybistes.common.models.EthereumWallet;
+import com.kollybistes.common.models.User;
 import com.kollybistes.core.repositories.EthereumRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -10,7 +11,6 @@ import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
-import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Convert;
 
 import java.io.File;

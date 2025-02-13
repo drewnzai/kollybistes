@@ -1,7 +1,9 @@
 package com.kollybistes.core.rpc;
 
-import com.kollybistes.core.models.BitcoinWallet;
-import com.kollybistes.core.models.User;
+
+import com.kollybistes.common.models.BitcoinWallet;
+import com.kollybistes.common.models.User;
+import com.kollybistes.core.services.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +24,7 @@ public class BitcoinRPC {
     private String username;
     @Value("${bitcoin.rpc.password}")
     private String password;
+    private AuthService authService;
     private final RestTemplate restTemplate;
 
     private String sendRequest(String method, Object params, String walletName) {
@@ -57,7 +60,9 @@ public class BitcoinRPC {
     }
 
     // Create a new wallet
-    public BitcoinWallet createWallet(User user) {
+    public BitcoinWallet createWallet() {
+        User user = authService.getCurrentUser();
+
         String method = "createwallet";
 
 //      Creates a Legacy wallet; using descriptor wallets is just a lot of work

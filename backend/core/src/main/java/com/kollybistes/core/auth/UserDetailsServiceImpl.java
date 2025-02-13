@@ -1,6 +1,6 @@
 package com.kollybistes.core.auth;
 
-import com.kollybistes.core.models.User;
+import com.kollybistes.common.models.User;
 import com.kollybistes.core.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

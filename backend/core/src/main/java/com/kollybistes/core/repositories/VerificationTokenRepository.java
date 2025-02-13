@@ -1,6 +1,6 @@
 package com.kollybistes.core.repositories;
 
-import com.kollybistes.core.models.VerificationToken;
+import com.kollybistes.common.models.VerificationToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

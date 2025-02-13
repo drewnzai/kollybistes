@@ -1,4 +1,4 @@
-package com.kollybistes.core.models;
+package com.kollybistes.common.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,10 +18,10 @@ import static javax.persistence.GenerationType.IDENTITY;
 public class VerificationToken {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String token;
-    @OneToOne(fetch = LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     private User user;
     private Instant expiryDate;
 }

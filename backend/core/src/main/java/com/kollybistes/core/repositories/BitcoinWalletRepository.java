@@ -1,7 +1,7 @@
 package com.kollybistes.core.repositories;
 
-import com.kollybistes.core.models.BitcoinWallet;
-import com.kollybistes.core.models.User;
+import com.kollybistes.common.models.BitcoinWallet;
+import com.kollybistes.common.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

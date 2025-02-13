@@ -1,15 +1,15 @@
 package com.kollybistes.core.services;
 
+import com.kollybistes.common.dtos.LoginRequest;
+import com.kollybistes.common.dtos.LoginResponse;
+import com.kollybistes.common.dtos.RefreshTokenRequest;
+import com.kollybistes.common.dtos.RegisterRequest;
+import com.kollybistes.common.models.NotificationEmail;
+import com.kollybistes.common.models.RefreshToken;
+import com.kollybistes.common.models.User;
+import com.kollybistes.common.models.VerificationToken;
 import com.kollybistes.core.auth.JwtUtil;
 import com.kollybistes.core.auth.UserDetailsImpl;
-import com.kollybistes.core.dtos.LoginRequest;
-import com.kollybistes.core.dtos.LoginResponse;
-import com.kollybistes.core.dtos.RefreshTokenRequest;
-import com.kollybistes.core.dtos.RegisterRequest;
-import com.kollybistes.core.models.NotificationEmail;
-import com.kollybistes.core.models.RefreshToken;
-import com.kollybistes.core.models.User;
-import com.kollybistes.core.models.VerificationToken;
 import com.kollybistes.core.repositories.RefreshTokenRepository;
 import com.kollybistes.core.repositories.UserRepository;
 import com.kollybistes.core.repositories.VerificationTokenRepository;

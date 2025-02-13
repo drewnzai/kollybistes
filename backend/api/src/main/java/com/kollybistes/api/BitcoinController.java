@@ -1,6 +1,6 @@
-package com.kollybistes.core.api;
+package com.kollybistes.api;
 
-import com.kollybistes.core.dtos.APIResponse;
+import com.kollybistes.common.dtos.APIResponse;
 import com.kollybistes.core.services.BitcoinWalletService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,4 +1,4 @@
-package com.kollybistes.core.dtos;
+package com.kollybistes.common.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

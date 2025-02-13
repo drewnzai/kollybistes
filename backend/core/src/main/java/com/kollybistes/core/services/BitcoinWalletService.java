@@ -1,8 +1,9 @@
 package com.kollybistes.core.services;
 
-import com.kollybistes.core.dtos.WalletDto;
-import com.kollybistes.core.models.BitcoinWallet;
-import com.kollybistes.core.models.User;
+
+import com.kollybistes.common.dtos.WalletDto;
+import com.kollybistes.common.models.BitcoinWallet;
+import com.kollybistes.common.models.User;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
 import com.kollybistes.core.rpc.BitcoinRPC;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class BitcoinWalletService {
             throw new Exception("User already has a wallet");
         }
 
-        BitcoinWallet bitcoinWallet = bitcoinRPC.createWallet(user);
+        BitcoinWallet bitcoinWallet = bitcoinRPC.createWallet();
 
         bitcoinWalletRepository.save(bitcoinWallet);
 

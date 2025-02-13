@@ -1,6 +1,6 @@
 package com.kollybistes.core.repositories;
 
-import com.kollybistes.core.models.User;
+import com.kollybistes.common.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

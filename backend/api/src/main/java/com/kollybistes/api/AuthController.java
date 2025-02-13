@@ -1,9 +1,10 @@
-package com.kollybistes.core.api;
+package com.kollybistes.api;
 
-import com.kollybistes.core.dtos.APIResponse;
-import com.kollybistes.core.dtos.LoginRequest;
-import com.kollybistes.core.dtos.RefreshTokenRequest;
-import com.kollybistes.core.dtos.RegisterRequest;
+
+import com.kollybistes.common.dtos.APIResponse;
+import com.kollybistes.common.dtos.LoginRequest;
+import com.kollybistes.common.dtos.RefreshTokenRequest;
+import com.kollybistes.common.dtos.RegisterRequest;
 import com.kollybistes.core.services.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
