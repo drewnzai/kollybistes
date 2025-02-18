@@ -4,6 +4,7 @@ import com.kollybistes.core.auth.UserDetailsServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -16,6 +17,7 @@ import org.web3j.protocol.http.HttpService;
 
 @Configuration
 @AllArgsConstructor
+@EnableAsync
 public class ApplicationConfig {
     private final UserDetailsServiceImpl userDetailsService;
 
