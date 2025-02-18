@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class BitcoinWalletService {
+public class BitcoinService {
 
     private final BitcoinWalletRepository bitcoinWalletRepository;
     private final AuthService authService;
