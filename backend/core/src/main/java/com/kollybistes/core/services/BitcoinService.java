@@ -89,7 +89,7 @@ public class BitcoinService {
                     user.getUsername(), 
                     recipientAddress,
                     amount,
-                    exchangeService.getRecommendedBitcoinFee()
+                    basicBTCFee
             );
 
         }
