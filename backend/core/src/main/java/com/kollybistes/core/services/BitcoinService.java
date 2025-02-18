@@ -9,6 +9,8 @@ import com.kollybistes.core.rpc.BitcoinRPC;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 public class BitcoinService {
@@ -54,6 +56,24 @@ public class BitcoinService {
                 .build();
     }
 
+    public void sendBitcoin(String recipientAddress, BigDecimal amount) throws Exception {
+        User user = authService.getCurrentUser();
 
+        BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
+                .orElseThrow(
+                        () -> {
+                            return new Exception("User does not have a Bitcoin wallet");
+                        }
+                );
+
+        BitcoinWallet recipient = bitcoinWalletRepository.findByAddress(recipientAddress)
+                .orElseThrow(
+                        () -> {
+                            return new Exception("User does not have a Bitcoin wallet");
+                        }
+                );
+
+        
+    }
 
 }

@@ -110,15 +110,19 @@ public class BitcoinRPC {
         return new BigDecimal(mine.get("trusted").toString());
     }
 
-    public BigDecimal getUnTrustedAddressBalance(String walletName) {
-        String method = "getbalances";
-        String response = sendRequest(method, new Object[]{}, walletName);
+    public String sendBitcoin(String fromWallet, String toAddress, BigDecimal amount, BigDecimal feeRate) {
+        String method = "sendtoaddress";
+        Object[] params = { toAddress, amount, "Trade Transfer", "Trade Transfer", false, false, 1, "unset", feeRate };
 
-        // Parse JSON response
+        String response = sendRequest(method, params, fromWallet);
+
         JSONObject jsonResponse = new JSONObject(response);
-        JSONObject mine = jsonResponse.getJSONObject("result").getJSONObject("mine");
 
-        // Extract the "trusted" balance
-        return new BigDecimal(mine.get("untrusted_pending").toString());
+        if (jsonResponse.has("error") && !jsonResponse.isNull("error")) {
+            throw new RuntimeException("Bitcoin transfer failed: " + jsonResponse.getJSONObject("error").toString());
+        }
+
+        return jsonResponse.getString("result"); // Transaction ID
     }
+
 }

@@ -10,4 +10,6 @@ public interface BitcoinWalletRepository extends JpaRepository<BitcoinWallet, Lo
     Optional<BitcoinWallet> findByUser(User user);
 
     boolean existsByUser(User user);
+
+    Optional<BitcoinWallet> findByAddress(String address);
 }
