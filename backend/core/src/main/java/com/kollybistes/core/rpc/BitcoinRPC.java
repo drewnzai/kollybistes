@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -111,6 +112,15 @@ public class BitcoinRPC {
     }
 
     public String sendBitcoin(String fromWallet, String toAddress, BigDecimal amount, BigDecimal feeRate) {
+        return getResult(fromWallet, toAddress, amount, feeRate);
+    }
+
+    @Async
+    public String sendBitcoinToSystem(String fromWallet, String toAddress, BigDecimal amount, BigDecimal feeRate) {
+        return getResult(fromWallet, toAddress, amount, feeRate);
+    }
+
+    private String getResult(String fromWallet, String toAddress, BigDecimal amount, BigDecimal feeRate) {
         String method = "sendtoaddress";
         Object[] params = { toAddress, amount, "Trade Transfer", "Trade Transfer", false, false, 1, "unset", feeRate };
 
