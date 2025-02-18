@@ -71,9 +71,9 @@ public class BitcoinService {
                             return new Exception("User does not have a Bitcoin wallet");
                         }
                 );
-        BigDecimal transactionAmount = amount.multiply(TRANSACTION_FEE_PERCENT);
+        BigDecimal transactionAmount = amount.multiply(TRANSACTION_FEE_PERCENT); //Bitcoin to be sent to the system
         BigDecimal basicBTCFee =exchangeService.getRecommendedBitcoinFee();
-        BigDecimal finalBTCFee = basicBTCFee.multiply(new BigDecimal(2.0));
+        BigDecimal finalBTCFee = basicBTCFee.multiply(new BigDecimal("2.0")); //Gets the total amount of transaction fees that both transactions need
         BigDecimal finalAmount = amount.add(transactionAmount).add(finalBTCFee);
 
         if(finalAmount.compareTo(updateBalance(bitcoinWallet)) >= 0){
