@@ -18,6 +18,7 @@ public class BitcoinService {
     private final BitcoinWalletRepository bitcoinWalletRepository;
     private final AuthService authService;
     private final BitcoinRPC bitcoinRPC;
+    private static final BigDecimal TRANSACTION_FEE_PERCENT = new BigDecimal("0.15");
 
     public WalletDto createWallet() throws Exception {
         User user = authService.getCurrentUser();
@@ -56,7 +57,7 @@ public class BitcoinService {
                 .build();
     }
 
-    public void sendBitcoin(String recipientAddress, BigDecimal amount) throws Exception {
+    public void sendBitcointoOutsideWallet(String recipientAddress, BigDecimal amount) throws Exception {
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
@@ -66,12 +67,7 @@ public class BitcoinService {
                         }
                 );
 
-        BitcoinWallet recipient = bitcoinWalletRepository.findByAddress(recipientAddress)
-                .orElseThrow(
-                        () -> {
-                            return new Exception("User does not have a Bitcoin wallet");
-                        }
-                );
+        BigDecimal totalFees =
 
 
     }
