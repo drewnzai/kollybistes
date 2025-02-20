@@ -40,6 +40,8 @@ public class ExchangeService {
 
     /**
      * Fetches the recommended Bitcoin transaction fee in sat/vB (satoshis per virtual byte).
+     * It is then transformed into BTC (1 BTC = 100,000,000 satoshis) and multiplied by the normal transaction size
+     * of 250vB
      */
     public BigDecimal getRecommendedBitcoinFee() {
         try{
@@ -48,7 +50,8 @@ public class ExchangeService {
             JSONObject jsonResponse = new JSONObject(response);
 
             return jsonResponse.getJSONObject("data")
-                    .getBigDecimal("suggested_transaction_fee_per_byte_sat");
+                    .getBigDecimal("suggested_transaction_fee_per_byte_sat")
+                    .multiply(BigDecimal.valueOf(100000000L)).multiply(BigDecimal.valueOf(250L));
         }catch(Exception e){
             throw new RuntimeException("Failed to get the recommended BTC transaction fee");
         }
