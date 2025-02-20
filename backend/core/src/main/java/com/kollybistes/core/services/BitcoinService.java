@@ -98,6 +98,10 @@ public class BitcoinService {
         }
     }
 
+    public String confirmTransaction(){
+        return null;
+    }
+
     private BigDecimal updateBalance(BitcoinWallet bitcoinWallet){
         BigDecimal updated = bitcoinRPC
                 .getTrustedAddressBalance(bitcoinWallet
