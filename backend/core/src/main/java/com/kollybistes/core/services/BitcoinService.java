@@ -62,7 +62,7 @@ public class BitcoinService {
                 .build();
     }
 
-    public String sendBitcointoOutsideWallet(String recipientAddress, BigDecimal amount) throws Exception {
+    public String sendBitcoinToOutsideWallet(String recipientAddress, BigDecimal amount) throws Exception {
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
