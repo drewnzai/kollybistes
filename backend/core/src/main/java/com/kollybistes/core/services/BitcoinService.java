@@ -74,7 +74,7 @@ public class BitcoinService {
                         }
                 );
         BigDecimal transactionAmount = amount.multiply(TRANSACTION_FEE_PERCENT); //Bitcoin to be sent to the system
-        BigDecimal basicBTCFee =exchangeService.getRecommendedBitcoinFee();
+        BigDecimal basicBTCFee = exchangeService.getRecommendedBitcoinFee();
         BigDecimal finalBTCFee = basicBTCFee.multiply(new BigDecimal("2.0")); //Gets the total amount of transaction fees that both transactions need
         BigDecimal finalAmount = amount.add(transactionAmount).add(finalBTCFee);
 
