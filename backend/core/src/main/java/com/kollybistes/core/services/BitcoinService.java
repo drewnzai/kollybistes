@@ -1,6 +1,8 @@
 package com.kollybistes.core.services;
 
 
+import com.kollybistes.common.dtos.FeesDto;
+import com.kollybistes.common.dtos.TransactionDto;
 import com.kollybistes.common.dtos.WalletDto;
 import com.kollybistes.common.models.BitcoinWallet;
 import com.kollybistes.common.models.User;
@@ -62,7 +64,7 @@ public class BitcoinService {
                 .build();
     }
 
-    public String sendBitcoinToOutsideWallet(String recipientAddress, BigDecimal amount) throws Exception {
+    public TransactionDto sendBitcoinToOutsideWallet(String recipientAddress, BigDecimal amount) throws Exception {
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
@@ -78,28 +80,42 @@ public class BitcoinService {
 
         if(finalAmount.compareTo(updateBalance(bitcoinWallet)) >= 0){
 
-            bitcoinRPC.sendBitcoinToSystem(
-                    user.getUsername(),
-                    systemAddress,
-                    transactionAmount,
-                    basicBTCFee
-            );
-
-            return bitcoinRPC.sendBitcoin(
-                    user.getUsername(), 
-                    recipientAddress,
-                    amount,
-                    basicBTCFee
-            );
-
+            return TransactionDto.builder()
+                    .amount(amount)
+                    .recipientAddress(recipientAddress)
+                    .feesDto(
+                            new FeesDto(transactionAmount, finalBTCFee)
+                    )
+                    .expectedBalance(bitcoinWallet.getBalance().subtract(finalAmount))
+                    .build();
         }
         else{
             throw new Exception("User does not have the necessary balance");
         }
     }
 
-    public String confirmTransaction(){
-        return null;
+    public String confirmTransaction(TransactionDto transactionDto){
+        User user = authService.getCurrentUser();
+
+        BigDecimal basicTransactionFee = transactionDto
+                .getFeesDto()
+                .getTransactionFee()
+                .divide(new BigDecimal("2.0"));
+
+        bitcoinRPC.sendBitcoinToSystem(
+                user.getUsername(),
+                systemAddress,
+                transactionDto.getFeesDto().getSystemFee(),
+                basicTransactionFee
+        );
+
+        return bitcoinRPC.sendBitcoin(
+                user.getUsername(),
+                transactionDto.getRecipientAddress(),
+                transactionDto.getAmount(),
+                basicTransactionFee
+        );
+
     }
 
     private BigDecimal updateBalance(BitcoinWallet bitcoinWallet){
