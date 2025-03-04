@@ -1,7 +1,5 @@
-package com.kollybistes.core.models;
+package com.kollybistes.common.models;
 
-import com.kollybistes.common.models.BitcoinWallet;
-import com.kollybistes.common.models.EthereumWallet;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
