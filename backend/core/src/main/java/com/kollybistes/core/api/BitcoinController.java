@@ -1,4 +1,4 @@
-package com.kollybistes.api;
+package com.kollybistes.core.api;
 
 import com.kollybistes.common.dtos.APIResponse;
 import com.kollybistes.common.dtos.TransactionDto;
@@ -15,14 +15,16 @@ public class BitcoinController {
 
     @PostMapping("wallet/create")
     public Object createWallet() {
-        try {
-            return bitcoinService.createWallet();
-        } catch (Exception e) {
-            return APIResponse
-                    .builder()
-                    .error(e.getMessage())
-                    .build();
-        }
+        return bitcoinService.createWallet();
+
+//        try {
+//            return bitcoinService.createWallet();
+//        } catch (Exception e) {
+//            return APIResponse
+//                    .builder()
+//                    .error(e.getMessage())
+//                    .build();
+//        }
     }
 
     @GetMapping("wallet/balance")

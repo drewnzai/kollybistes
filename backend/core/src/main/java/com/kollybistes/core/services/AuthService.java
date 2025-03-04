@@ -18,6 +18,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -96,14 +97,16 @@ public class AuthService {
     public User getCurrentUser() {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.
                 getContext().getAuthentication().getPrincipal();
+
         return userRepository.findByUsername(principal.getUsername()).get();
     }
 
     public LoginResponse login(LoginRequest loginRequest) throws Exception {
-        Authentication authenticate = authenticationManager
+        Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
                         loginRequest.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authenticate);
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(
                 () -> {
@@ -117,7 +120,7 @@ public class AuthService {
         refreshToken.setUser(user);
         refreshTokenRepository.save(refreshToken);
 
-        return build(jwtUtil.generateJwtToken(authenticate)
+        return build(jwtUtil.generateJwtToken(authentication)
                 , loginRequest.getUsername()
                 , refreshToken.getToken());
     }

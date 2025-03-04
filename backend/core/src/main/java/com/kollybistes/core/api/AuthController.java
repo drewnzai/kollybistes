@@ -1,4 +1,4 @@
-package com.kollybistes.api;
+package com.kollybistes.core.api;
 
 
 import com.kollybistes.common.dtos.APIResponse;

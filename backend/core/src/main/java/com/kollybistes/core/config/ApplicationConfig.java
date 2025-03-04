@@ -17,7 +17,6 @@ import org.web3j.protocol.http.HttpService;
 
 @Configuration
 @AllArgsConstructor
-@EnableAsync
 public class ApplicationConfig {
     private final UserDetailsServiceImpl userDetailsService;
 
