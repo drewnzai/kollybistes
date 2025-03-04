@@ -15,16 +15,14 @@ public class BitcoinController {
 
     @PostMapping("wallet/create")
     public Object createWallet() {
-        return bitcoinService.createWallet();
-
-//        try {
-//            return bitcoinService.createWallet();
-//        } catch (Exception e) {
-//            return APIResponse
-//                    .builder()
-//                    .error(e.getMessage())
-//                    .build();
-//        }
+        try {
+            return bitcoinService.createWallet();
+        } catch (Exception e) {
+            return APIResponse
+                    .builder()
+                    .error(e.getMessage())
+                    .build();
+        }
     }
 
     @GetMapping("wallet/balance")

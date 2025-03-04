@@ -61,17 +61,15 @@ public class BitcoinRPC {
     }
 
     // Create a new wallet
-    public BitcoinWallet createWallet() {
-        User user = authService.getCurrentUser();
+    public BitcoinWallet createWallet(User user) {
 
         String method = "createwallet";
+        String username = user.getUsername();
 
 //      Creates a Legacy wallet; using descriptor wallets is just a lot of work
-        Object[] params = { user.getUsername(), false, false, "", false, false };
+        Object[] params = { username, false, false, "", false, false };
 
         sendRequest(method, params, null);
-
-        String username = user.getUsername();
 
 //         Step 2: Generate a New Address
         String addressResponse = sendRequest("getnewaddress", new Object[]{username},

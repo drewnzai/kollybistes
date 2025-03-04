@@ -27,14 +27,14 @@ public class BitcoinService {
     private String systemAddress;
     private static final BigDecimal TRANSACTION_FEE_PERCENT = new BigDecimal("0.15");
 
-    public WalletDto createWallet() {
+    public WalletDto createWallet() throws Exception {
         User user = authService.getCurrentUser();
 
-//        if(bitcoinWalletRepository.existsByUser(user)){
-//            throw new Exception("User already has a wallet");
-//        }
+        if(bitcoinWalletRepository.existsByUser(user)){
+            throw new Exception("User already has a wallet");
+        }
 
-        BitcoinWallet bitcoinWallet = bitcoinRPC.createWallet();
+        BitcoinWallet bitcoinWallet = bitcoinRPC.createWallet(user);
 
         bitcoinWalletRepository.save(bitcoinWallet);
 
