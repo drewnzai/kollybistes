@@ -27,4 +27,5 @@ public class EthereumWallet {
     private Date createdAt;
     @OneToOne
     private User user;
+    private boolean tradingLocked = false;
 }

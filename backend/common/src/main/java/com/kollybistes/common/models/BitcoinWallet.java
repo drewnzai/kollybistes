@@ -28,4 +28,5 @@ public class BitcoinWallet {
     private Date createdAt;
     @OneToOne
     private User user;
+    private boolean tradingLocked = false;
 }
