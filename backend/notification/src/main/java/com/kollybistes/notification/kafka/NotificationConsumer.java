@@ -12,7 +12,8 @@ import org.springframework.stereotype.Service;
 public class NotificationConsumer {
     private final MailService mailService;
 
-    @KafkaListener(topics = "notification-emails", groupId = "kollybistes")
+    @KafkaListener(topics = "notification-emails", groupId = "kollybistes",
+            containerFactory = "containerFactory")
     public void consume(@Payload NotificationEmail notificationEmail) throws Exception {
         mailService.sendMail(notificationEmail);
     }
