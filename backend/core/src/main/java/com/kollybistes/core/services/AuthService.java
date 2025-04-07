@@ -10,6 +10,7 @@ import com.kollybistes.common.models.User;
 import com.kollybistes.common.models.VerificationToken;
 import com.kollybistes.core.auth.JwtUtil;
 import com.kollybistes.core.auth.UserDetailsImpl;
+import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.RefreshTokenRepository;
 import com.kollybistes.core.repositories.UserRepository;
 import com.kollybistes.core.repositories.VerificationTokenRepository;
@@ -18,7 +19,6 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final VerificationTokenRepository verificationTokenRepository;
     private final AuthenticationManager authenticationManager;
-    private final MailService mailService;
+    private final NotificationProducer notificationProducer;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
@@ -55,7 +55,7 @@ public class AuthService {
 
             String token = generateVerificationToken(user);
 
-            mailService.sendMail(
+            notificationProducer.sendMail(
                     new NotificationEmail("Account Verification",
                             user.getEmail(),
                             "Thank you for signing up to Kollybistes, " +
@@ -164,5 +164,6 @@ public class AuthService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return !(authentication instanceof AnonymousAuthenticationToken) && authentication.isAuthenticated();
     }
+
 
 }
