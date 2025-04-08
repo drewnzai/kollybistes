@@ -18,8 +18,9 @@ public class MailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
 
-    private String build(String message) {
+    private String build(String message, String title) {
         Context context = new Context();
+        context.setVariable("title", title);
         context.setVariable("message", message);
         return templateEngine.process("MailTemplate", context);
     }
@@ -30,7 +31,7 @@ public class MailService {
             messageHelper.setFrom("kollybistes@email.com");
             messageHelper.setTo(notificationEmail.getRecipient());
             messageHelper.setSubject(notificationEmail.getSubject());
-            messageHelper.setText(build(notificationEmail.getBody()));
+            messageHelper.setText(build(notificationEmail.getBody(), notificationEmail.getTitle()));
         };
         try {
             mailSender.send(messagePreparator);
