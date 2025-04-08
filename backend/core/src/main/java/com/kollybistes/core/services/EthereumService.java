@@ -3,7 +3,9 @@ package com.kollybistes.core.services;
 
 import com.kollybistes.common.dtos.WalletDto;
 import com.kollybistes.common.models.EthereumWallet;
+import com.kollybistes.common.models.NotificationEmail;
 import com.kollybistes.common.models.User;
+import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.EthereumRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ public class EthereumService {
     private final EthereumRepository ethereumRepository;
     private static final String PASSWORD = "your_strong_password"; // Set a secure password
     private static final String KEYSTORE_PATH = "/home/andrew/Ethereum/private/keystore/";
+    private final NotificationProducer notificationProducer;
 
     public WalletDto createWallet() throws Exception {
         User user = authService.getCurrentUser();
@@ -48,6 +51,17 @@ public class EthereumService {
         ethereumWallet.setPublicKey(keyPair.getPublicKey().toString(16));
         ethereumWallet.setAddress("0x" + walletFile.getAddress());
         ethereumWallet.setCreatedAt(Date.from(Instant.now()));
+
+        notificationProducer.sendMail(
+                NotificationEmail.builder()
+                        .recipient(user.getEmail())
+                        .subject("Successful Ethereum Wallet Creation")
+                        .title("Updated Kollybistes Account Details")
+                        .body("You have successfully created an Ethereum wallet, tied to your account with address: "
+                                + ethereumWallet.getAddress()
+                                + " Do not share these details with anyone.")
+                        .build()
+        );
 
         ethereumRepository.save(ethereumWallet);
 

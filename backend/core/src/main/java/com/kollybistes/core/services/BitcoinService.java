@@ -5,7 +5,9 @@ import com.kollybistes.common.dtos.FeesDto;
 import com.kollybistes.common.dtos.TransactionDto;
 import com.kollybistes.common.dtos.WalletDto;
 import com.kollybistes.common.models.BitcoinWallet;
+import com.kollybistes.common.models.NotificationEmail;
 import com.kollybistes.common.models.User;
+import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
 import com.kollybistes.core.rpc.BitcoinRPC;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class BitcoinService {
     private final AuthService authService;
     private final BitcoinRPC bitcoinRPC;
     private final ExchangeService exchangeService;
+    private final NotificationProducer notificationProducer;
 
     @Value("${system.btc.address}")
     private String systemAddress;
@@ -35,6 +38,17 @@ public class BitcoinService {
         }
 
         BitcoinWallet bitcoinWallet = bitcoinRPC.createWallet(user);
+
+        notificationProducer.sendMail(
+                NotificationEmail.builder()
+                        .recipient(user.getEmail())
+                        .subject("Successful Bitcoin Wallet Creation")
+                        .title("Updated Kollybistes Account Details")
+                        .body("You have successfully created a Bitcoin wallet, tied to your account with address: "
+                                + bitcoinWallet.getAddress()
+                        + " Do not share these details with anyone.")
+                        .build()
+        );
 
         bitcoinWalletRepository.save(bitcoinWallet);
 
