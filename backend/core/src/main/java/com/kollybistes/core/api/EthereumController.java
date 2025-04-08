@@ -1,11 +1,10 @@
 package com.kollybistes.core.api;
 
 import com.kollybistes.common.dtos.APIResponse;
+import com.kollybistes.common.dtos.TransactionDto;
 import com.kollybistes.core.services.EthereumService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/ethereum/")
@@ -19,6 +18,20 @@ public class EthereumController {
         try {
             return ethereumService.createWallet();
         } catch (Exception e) {
+            return APIResponse
+                    .builder()
+                    .error(e.getMessage())
+                    .build();
+        }
+    }
+
+    @PostMapping("send")
+    public Object sendEthToOutsideWallet(@RequestBody TransactionDto transactionDto){
+        try{
+            return ethereumService.sendEthToOutsideWallet(transactionDto.getRecipientAddress()
+                    , transactionDto.getAmount());
+        }
+        catch(Exception e){
             return APIResponse
                     .builder()
                     .error(e.getMessage())

@@ -1,6 +1,8 @@
 package com.kollybistes.core.services;
 
 
+import com.kollybistes.common.dtos.FeesDto;
+import com.kollybistes.common.dtos.TransactionDto;
 import com.kollybistes.common.dtos.WalletDto;
 import com.kollybistes.common.models.EthereumWallet;
 import com.kollybistes.common.models.NotificationEmail;
@@ -8,6 +10,7 @@ import com.kollybistes.common.models.User;
 import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.EthereumRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
@@ -17,6 +20,7 @@ import org.web3j.utils.Convert;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Date;
 
@@ -27,9 +31,12 @@ public class EthereumService {
     private final Web3j web3j;
     private final AuthService authService;
     private final EthereumRepository ethereumRepository;
-    private static final String PASSWORD = "your_strong_password"; // Set a secure password
     private static final String KEYSTORE_PATH = "/home/andrew/Ethereum/private/keystore/";
     private final NotificationProducer notificationProducer;
+    private final ExchangeService exchangeService;
+    private static final BigDecimal TRANSACTION_FEE_PERCENT = new BigDecimal("0.15");
+    @Value("${system.eth.address}")
+    private String systemAddress;
 
     public WalletDto createWallet() throws Exception {
         User user = authService.getCurrentUser();
@@ -39,9 +46,9 @@ public class EthereumService {
         }
 
         ECKeyPair keyPair = Keys.createEcKeyPair();
-        WalletFile walletFile = Wallet.createStandard(PASSWORD, keyPair);
+        WalletFile walletFile = Wallet.createStandard(user.getPassword(), keyPair);
         WalletUtils
-                .generateWalletFile(PASSWORD, keyPair, new File(KEYSTORE_PATH), false);
+                .generateWalletFile(user.getPassword(), keyPair, new File(KEYSTORE_PATH), false);
 
         EthereumWallet ethereumWallet = new EthereumWallet();
 
@@ -71,13 +78,41 @@ public class EthereumService {
                                         .build();
     }
 
+    public TransactionDto sendEthToOutsideWallet(String recipientAddress, BigDecimal amountInEth) throws Exception {
+        User user = authService.getCurrentUser();
+
+        EthereumWallet ethWallet = ethereumRepository.findByUser(user)
+                .orElseThrow(() -> new Exception("User does not have an Ethereum wallet"));
+
+        // 15% transaction fee to be paid to system wallet
+        BigDecimal transactionFeeAmount = amountInEth.multiply(TRANSACTION_FEE_PERCENT);
+
+        // Get recommended gas price from ExchangeService (in Gwei) (*2 for two transactions)
+        BigDecimal recommendedGasPriceGwei = exchangeService.getRecommendedEthereumGasFee()
+                .multiply(BigDecimal.valueOf(2L));
+        BigInteger gasPriceWei = Convert.toWei(recommendedGasPriceGwei, Convert.Unit.GWEI)
+                .toBigIntegerExact();
+        BigInteger gasLimit = BigInteger.valueOf(21000); // standard for ETH transfer
+        BigDecimal gasCostEth = new BigDecimal(gasPriceWei.multiply(gasLimit))
+                .divide(Convert.Unit.ETHER.getWeiFactor());
+
+        BigDecimal finalAmount = amountInEth.add(transactionFeeAmount).add(gasCostEth);
+
+        if (finalAmount.compareTo(ethWallet.getBalance()) > 0) {
+            throw new Exception("User does not have the necessary balance");
+        }
+
+        return TransactionDto.builder()
+                .amount(amountInEth)
+                .recipientAddress(recipientAddress)
+                .feesDto(new FeesDto(transactionFeeAmount, gasCostEth))
+                .expectedBalance(ethWallet.getBalance().subtract(finalAmount))
+                .build();
+    }
+
     public BigDecimal getBalance(String address) throws Exception {
         EthGetBalance balance = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
         return Convert.fromWei(new BigDecimal(balance.getBalance()), Convert.Unit.ETHER);
     }
 
-    public String loadPrivateKey(String walletFileName) throws Exception {
-        Credentials credentials = WalletUtils.loadCredentials(PASSWORD, KEYSTORE_PATH + walletFileName);
-        return credentials.getEcKeyPair().getPrivateKey().toString(16);
-    }
 }
