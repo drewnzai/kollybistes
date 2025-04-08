@@ -14,7 +14,7 @@ public class EthereumController {
 
     private final EthereumService ethereumService;
 
-    @GetMapping("/createWallet")
+    @GetMapping("wallet/create")
     public Object createWallet() {
         try {
             return ethereumService.createWallet();
