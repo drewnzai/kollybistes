@@ -56,11 +56,14 @@ public class AuthService {
             String token = generateVerificationToken(user);
 
             notificationProducer.sendMail(
-                    new NotificationEmail("Account Verification",
-                            user.getEmail(),
-                            "Thank you for signing up to Kollybistes, " +
+                    NotificationEmail.builder()
+                            .subject("Account Verification")
+                            .recipient(user.getEmail())
+                            .title("Kollybistes Account Verification")
+                            .body("Thank you for signing up to Kollybistes, " +
                                     "please click on the below url to activate your account: " +
                                     "http://localhost:8080/api/auth/accountVerification/" + token)
+                            .build()
             );
 
             userRepository.save(user);
