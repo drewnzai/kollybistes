@@ -60,7 +60,8 @@ public class ExchangeService {
     }
 
     /**
-     * Fetches the recommended Ethereum gas price in gwei.
+     * Fetches the recommended Ethereum gas price. Comes in gwei hence divided up by 1 Billion
+     * (1 ETH = 1,000,000,000 gwei).
      */
     public BigDecimal getRecommendedEthereumGasFee() {
 
