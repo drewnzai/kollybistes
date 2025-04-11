@@ -1,12 +1,14 @@
 package com.kollybistes.core.services;
 
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.json.JSONObject;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +53,7 @@ public class ExchangeService {
 
             return jsonResponse.getJSONObject("data")
                     .getBigDecimal("suggested_transaction_fee_per_byte_sat")
-                    .multiply(BigDecimal.valueOf(100000000L)).multiply(BigDecimal.valueOf(250L));
+                    .divide(BigDecimal.valueOf(100000000L)).multiply(BigDecimal.valueOf(250L));
         }catch(Exception e){
             throw new RuntimeException("Failed to get the recommended BTC transaction fee");
         }
@@ -69,10 +71,18 @@ public class ExchangeService {
 
             return jsonResponse.getJSONObject("data")
                     .getJSONObject("suggested_transaction_fee_gwei_options")
-                    .getBigDecimal("cheetah");
+                    .getBigDecimal("cheetah").divide(BigDecimal.valueOf(1000000000L));
         }catch(Exception e){
             throw new RuntimeException("Failed to get the recommended ETH transaction fee");
         }
+    }
+
+    public Object getAllFees(){
+        Map<String, BigDecimal> allFees = new HashMap<>();
+        allFees.put("BTC", getRecommendedBitcoinFee());
+        allFees.put("ETH", getRecommendedEthereumGasFee());
+
+        return allFees;
     }
 }
 
