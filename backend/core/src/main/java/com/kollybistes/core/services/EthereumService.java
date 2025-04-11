@@ -86,7 +86,7 @@ public class EthereumService {
         // 15% transaction fee to be paid to system wallet
         BigDecimal transactionFeeAmount = amountInEth.multiply(TRANSACTION_FEE_PERCENT);
 
-        // Get recommended gas price from ExchangeService (in Gwei) (*2 for two transactions)
+        // Get recommended gas price from ExchangeService (*2 for two transactions)
         BigDecimal recommendedGasPrice = exchangeService.getRecommendedEthereumGasFee()
                 .multiply(BigDecimal.valueOf(2L));
         BigDecimal gasLimit = BigDecimal.valueOf(21000L); // standard for ETH transfer
