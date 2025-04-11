@@ -71,7 +71,8 @@ public class ExchangeService {
 
             return jsonResponse.getJSONObject("data")
                     .getJSONObject("suggested_transaction_fee_gwei_options")
-                    .getBigDecimal("cheetah").divide(BigDecimal.valueOf(1000000000L));
+                    .getBigDecimal("cheetah")
+                    .divide(BigDecimal.valueOf(1000000000L));
         }catch(Exception e){
             throw new RuntimeException("Failed to get the recommended ETH transaction fee");
         }
