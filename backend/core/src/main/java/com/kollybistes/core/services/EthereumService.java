@@ -90,9 +90,9 @@ public class EthereumService {
         BigDecimal recommendedGasPrice = exchangeService.getRecommendedEthereumGasFee()
                 .multiply(BigDecimal.valueOf(2L));
         BigDecimal gasLimit = BigDecimal.valueOf(21000L); // standard for ETH transfer
-        BigDecimal gasCostEth = recommendedGasPrice.multiply(gasLimit);
+        BigDecimal gasCost = recommendedGasPrice.multiply(gasLimit);
 
-        BigDecimal finalAmount = amountInEth.add(transactionFeeAmount).add(gasCostEth);
+        BigDecimal finalAmount = amountInEth.add(transactionFeeAmount).add(gasCost);
 
         if (finalAmount.compareTo(ethWallet.getBalance()) > 0) {
             throw new Exception("User does not have the necessary balance");
@@ -101,7 +101,7 @@ public class EthereumService {
         return TransactionDto.builder()
                 .amount(amountInEth)
                 .recipientAddress(recipientAddress)
-                .feesDto(new FeesDto(transactionFeeAmount, gasCostEth))
+                .feesDto(new FeesDto(transactionFeeAmount, gasCost))
                 .expectedBalance(ethWallet.getBalance().subtract(finalAmount))
                 .build();
     }
