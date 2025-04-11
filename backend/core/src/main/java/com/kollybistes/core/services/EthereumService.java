@@ -20,7 +20,6 @@ import org.web3j.utils.Convert;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Date;
 
@@ -88,13 +87,10 @@ public class EthereumService {
         BigDecimal transactionFeeAmount = amountInEth.multiply(TRANSACTION_FEE_PERCENT);
 
         // Get recommended gas price from ExchangeService (in Gwei) (*2 for two transactions)
-        BigDecimal recommendedGasPriceGwei = exchangeService.getRecommendedEthereumGasFee()
+        BigDecimal recommendedGasPrice = exchangeService.getRecommendedEthereumGasFee()
                 .multiply(BigDecimal.valueOf(2L));
-        BigInteger gasPriceWei = Convert.toWei(recommendedGasPriceGwei, Convert.Unit.GWEI)
-                .toBigIntegerExact();
-        BigInteger gasLimit = BigInteger.valueOf(21000); // standard for ETH transfer
-        BigDecimal gasCostEth = new BigDecimal(gasPriceWei.multiply(gasLimit))
-                .divide(Convert.Unit.ETHER.getWeiFactor());
+        BigDecimal gasLimit = BigDecimal.valueOf(21000L); // standard for ETH transfer
+        BigDecimal gasCostEth = recommendedGasPrice.multiply(gasLimit);
 
         BigDecimal finalAmount = amountInEth.add(transactionFeeAmount).add(gasCostEth);
 
