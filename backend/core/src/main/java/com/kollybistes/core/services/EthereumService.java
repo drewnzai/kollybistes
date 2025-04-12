@@ -16,13 +16,16 @@ import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
+import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
+import org.web3j.tx.RawTransactionManager;
 import org.web3j.utils.Convert;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -31,12 +34,13 @@ public class EthereumService {
     private final Web3j web3j;
     private final AuthService authService;
     private final EthereumRepository ethereumRepository;
-    private static final String KEYSTORE_PATH = "/home/andrew/Ethereum/private/kollybistes/keystore/";
     private final NotificationProducer notificationProducer;
     private final ExchangeService exchangeService;
     private static final BigDecimal TRANSACTION_FEE_PERCENT = new BigDecimal("0.15");
     @Value("${system.eth.address}")
     private String systemAddress;
+    @Value("${system.eth.chainId}")
+    private String chainId;
 
     public WalletDto createWallet() throws Exception {
         User user = authService.getCurrentUser();
@@ -47,13 +51,10 @@ public class EthereumService {
 
         ECKeyPair keyPair = Keys.createEcKeyPair();
         WalletFile walletFile = Wallet.createStandard(user.getPassword(), keyPair);
-        WalletUtils
-                .generateWalletFile(user.getPassword(), keyPair, new File(KEYSTORE_PATH), false);
 
         EthereumWallet ethereumWallet = new EthereumWallet();
-
         ethereumWallet.setUser(user);
-        ethereumWallet.setBalance(BigDecimal.valueOf(0l));
+        ethereumWallet.setBalance(BigDecimal.valueOf(0L));
         ethereumWallet.setPrivateKey(keyPair.getPrivateKey().toString(16));
         ethereumWallet.setPublicKey(keyPair.getPublicKey().toString(16));
         ethereumWallet.setAddress("0x" + walletFile.getAddress());
@@ -117,6 +118,64 @@ public class EthereumService {
                 .feesDto(new FeesDto(transactionFeeAmount, gasCost))
                 .expectedBalance(ethereumWallet.getBalance().subtract(finalAmount))
                 .build();
+    }
+
+    public Object confirmTransaction(TransactionDto transactionDto) throws Exception {
+        User user = authService.getCurrentUser();
+
+        EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
+                .orElseThrow(() -> new Exception("User does not have an Ethereum wallet"));
+
+        if(ethereumWallet.isTradingLocked()){
+           throw new Exception("User's ETH wallet is currently in a transaction");
+        }
+
+        ethereumWallet.setTradingLocked(true);
+        ethereumRepository.save(ethereumWallet);
+
+        // Division by 42000 (2*21000) to get the gas fee used for individual transactions
+        BigDecimal individualGasCost = transactionDto.getFeesDto()
+                .getTransactionFee()
+                .divide(BigDecimal.valueOf(42000L));
+
+        BigInteger gasPriceWei = Convert.toWei(individualGasCost, Convert.Unit.ETHER).toBigInteger();
+
+        EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(
+                ethereumWallet.getAddress(), DefaultBlockParameterName.LATEST).sendAsync().get();
+
+        BigInteger nonce = ethGetTransactionCount.getTransactionCount();
+
+        Credentials credentials = Credentials.create(ethereumWallet.getPrivateKey());
+
+        RawTransactionManager txManager = new RawTransactionManager(web3j, credentials, Long.parseLong(chainId));
+        RawTransaction toSystem  = RawTransaction.createEtherTransaction(
+                nonce,  gasPriceWei,
+                BigInteger.valueOf(21000L),
+                systemAddress,
+                Convert.toWei(transactionDto.getFeesDto().getSystemFee(), Convert.Unit.ETHER)
+                .toBigInteger());
+
+        String toSystemHash = txManager.signAndSend(toSystem).getTransactionHash();
+
+        nonce = nonce.add(BigInteger.ONE);
+
+        RawTransaction toRecipient  = RawTransaction.createEtherTransaction(
+                nonce, gasPriceWei,
+                BigInteger.valueOf(21000L),
+                transactionDto.getRecipientAddress(),
+                Convert.toWei(transactionDto.getAmount(), Convert.Unit.ETHER).toBigInteger());
+
+        String toRecipientHash = txManager.signAndSend(toRecipient).getTransactionHash();
+
+        ethereumWallet.setTradingLocked(false);
+        ethereumWallet.setBalance(getBalance(ethereumWallet.getAddress()));
+        ethereumRepository.save(ethereumWallet);
+
+        Map<String, String> txDetails = new HashMap<>();
+        txDetails.put("System's TX Hash", toSystemHash);
+        txDetails.put("Recipient's TX Hash", toRecipientHash);
+
+        return txDetails;
     }
 
     public BigDecimal getBalance(String address) throws Exception {

@@ -38,4 +38,16 @@ public class EthereumController {
                     .build();
         }
     }
+
+    @PostMapping("confirm")
+    public Object confirmTransaction(@RequestBody TransactionDto transactionDto){
+        try{
+            return ethereumService.confirmTransaction(transactionDto);
+        }catch(Exception e){
+            return APIResponse
+                    .builder()
+                    .error(e.getMessage())
+                    .build();
+        }
+    }
 }
