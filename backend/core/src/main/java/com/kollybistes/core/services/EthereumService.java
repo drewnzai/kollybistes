@@ -20,6 +20,7 @@ import org.web3j.utils.Convert;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Date;
 
@@ -30,7 +31,7 @@ public class EthereumService {
     private final Web3j web3j;
     private final AuthService authService;
     private final EthereumRepository ethereumRepository;
-    private static final String KEYSTORE_PATH = "/home/andrew/Ethereum/private/keystore/";
+    private static final String KEYSTORE_PATH = "/home/andrew/Ethereum/private/kollybistes/keystore/";
     private final NotificationProducer notificationProducer;
     private final ExchangeService exchangeService;
     private static final BigDecimal TRANSACTION_FEE_PERCENT = new BigDecimal("0.15");
@@ -80,8 +81,20 @@ public class EthereumService {
     public TransactionDto sendEthToOutsideWallet(String recipientAddress, BigDecimal amountInEth) throws Exception {
         User user = authService.getCurrentUser();
 
-        EthereumWallet ethWallet = ethereumRepository.findByUser(user)
+        EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
                 .orElseThrow(() -> new Exception("User does not have an Ethereum wallet"));
+
+        EthGetBalance balanceResponse = web3j.ethGetBalance(ethereumWallet.getAddress(),
+                DefaultBlockParameterName.LATEST).send();
+
+        if (balanceResponse.hasError()) {
+            throw new Exception("Cannot retrieve ethereum balance from network");
+        }
+
+        BigInteger balanceWei = balanceResponse.getBalance();
+        BigDecimal balanceEther = Convert.fromWei(balanceWei.toString(), Convert.Unit.ETHER);
+
+        ethereumWallet.setBalance(balanceEther);
 
         // 15% transaction fee to be paid to system wallet
         BigDecimal transactionFeeAmount = amountInEth.multiply(TRANSACTION_FEE_PERCENT);
@@ -94,7 +107,7 @@ public class EthereumService {
 
         BigDecimal finalAmount = amountInEth.add(transactionFeeAmount).add(gasCost);
 
-        if (finalAmount.compareTo(ethWallet.getBalance()) > 0) {
+        if (finalAmount.compareTo(ethereumWallet.getBalance()) > 0) {
             throw new Exception("User does not have the necessary balance");
         }
 
@@ -102,7 +115,7 @@ public class EthereumService {
                 .amount(amountInEth)
                 .recipientAddress(recipientAddress)
                 .feesDto(new FeesDto(transactionFeeAmount, gasCost))
-                .expectedBalance(ethWallet.getBalance().subtract(finalAmount))
+                .expectedBalance(ethereumWallet.getBalance().subtract(finalAmount))
                 .build();
     }
 
