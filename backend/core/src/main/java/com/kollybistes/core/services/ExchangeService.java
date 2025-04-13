@@ -7,8 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
+import java.math.BigInteger;
 
 @Service
 @RequiredArgsConstructor
@@ -42,18 +41,15 @@ public class ExchangeService {
 
     /**
      * Fetches the recommended Bitcoin transaction fee in sat/vB (satoshis per virtual byte).
-     * It is then transformed into BTC (1 BTC = 100,000,000 satoshis) and multiplied by the normal transaction size
-     * of 250vB
      */
-    public BigDecimal getRecommendedBitcoinFee() {
+    public BigInteger getRecommendedBitcoinFee() {
         try{
             String response = restTemplate.getForObject(bitcoinFeeApiUrl, String.class);
             assert response != null;
             JSONObject jsonResponse = new JSONObject(response);
 
             return jsonResponse.getJSONObject("data")
-                    .getBigDecimal("suggested_transaction_fee_per_byte_sat")
-                    .divide(BigDecimal.valueOf(100000000L)).multiply(BigDecimal.valueOf(250L));
+                    .getBigInteger("suggested_transaction_fee_per_byte_sat");
         }catch(Exception e){
             throw new RuntimeException("Failed to get the recommended BTC transaction fee");
         }
@@ -79,12 +75,5 @@ public class ExchangeService {
         }
     }
 
-    public Object getAllFees(){
-        Map<String, BigDecimal> allFees = new HashMap<>();
-        allFees.put("BTC", getRecommendedBitcoinFee());
-        allFees.put("ETH", getRecommendedEthereumGasFee());
-
-        return allFees;
-    }
 }
 

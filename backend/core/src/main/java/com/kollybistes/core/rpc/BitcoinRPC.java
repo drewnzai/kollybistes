@@ -5,18 +5,21 @@ import com.kollybistes.common.models.BitcoinWallet;
 import com.kollybistes.common.models.User;
 import com.kollybistes.core.services.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -50,6 +53,7 @@ public class BitcoinRPC {
 
         HttpEntity<String> requestEntity = new HttpEntity<>(jsonRequest.toString(), headers);
 
+        System.out.println(jsonRequest);
         ResponseEntity<String> response = restTemplate.exchange(
                 RPC_URL,
                 HttpMethod.POST,
@@ -109,28 +113,52 @@ public class BitcoinRPC {
         return new BigDecimal(mine.get("trusted").toString());
     }
 
-    public String sendBitcoin(String fromWallet, String toAddress, BigDecimal amount, BigDecimal feeRate) {
-        return getResult(fromWallet, toAddress, amount, feeRate);
+    public String sendBitcoin(String fromWallet,
+                              String toAddress,
+                              BigDecimal amount,
+                              BigInteger feeRate) {
+        return sendBitcoinWithCustomFee(fromWallet, toAddress, amount, feeRate);
     }
 
-    @Async
-    public String sendBitcoinToSystem(String fromWallet, String toAddress, BigDecimal amount, BigDecimal feeRate) {
-        return getResult(fromWallet, toAddress, amount, feeRate);
+    public String sendBitcoinToSystem(String fromWallet,
+                                      String toAddress,
+                                      BigDecimal amount,
+                                      BigInteger feeRate) {
+        return sendBitcoinWithCustomFee(fromWallet, toAddress, amount, feeRate);
     }
 
-    private String getResult(String fromWallet, String toAddress, BigDecimal amount, BigDecimal feeRate) {
-        String method = "sendtoaddress";
-        Object[] params = { toAddress, amount, "Trade Transfer", "Trade Transfer", false, false, 1, "unset", feeRate };
+    private String sendBitcoinWithCustomFee(String fromWallet,
+                                            String toAddress,
+                                            BigDecimal amount,
+                                            BigInteger feeRate) {
+        //Step 1: Properly create raw transaction output as Map (not JSONObject)
+        Map<String, Object> outputs = new HashMap<>();
+        outputs.put(toAddress, amount);
 
-        String response = sendRequest(method, params, fromWallet);
+        String createRawTxResponse = sendRequest("createrawtransaction", new Object[]{
+                new JSONArray(), // empty inputs
+                outputs          // use Map here
+        }, fromWallet);
 
-        JSONObject jsonResponse = new JSONObject(response);
+        String rawTxHex = new JSONObject(createRawTxResponse).getString("result");
 
-        if (jsonResponse.has("error") && !jsonResponse.isNull("error")) {
-            throw new RuntimeException("Bitcoin transfer failed: " + jsonResponse.getJSONObject("error").toString());
-        }
+        //Step 2: Fund raw transaction with desired feeRate
+        JSONObject options = new JSONObject();
+        options.put("fee_rate", feeRate); // sat/vB or BTC/kB
 
-        return jsonResponse.getString("result"); // Transaction ID
+        String fundTxResponse = sendRequest("fundrawtransaction", new Object[]{ rawTxHex, options }, fromWallet);
+        JSONObject fundResult = new JSONObject(fundTxResponse).getJSONObject("result");
+        String fundedTxHex = fundResult.getString("hex");
+
+        //Step 3: Sign the transaction
+        String signedTxResponse = sendRequest("signrawtransactionwithwallet", new Object[]{ fundedTxHex }, fromWallet);
+        JSONObject signedResult = new JSONObject(signedTxResponse).getJSONObject("result");
+        String signedTxHex = signedResult.getString("hex");
+
+        //Step 4: Broadcast the signed transaction
+        String sendTxResponse = sendRequest("sendrawtransaction", new Object[]{ signedTxHex }, fromWallet);
+        return new JSONObject(sendTxResponse).getString("result"); // TXID
     }
+
 
 }
