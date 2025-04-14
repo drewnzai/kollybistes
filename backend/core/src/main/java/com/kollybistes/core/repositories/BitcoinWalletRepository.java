@@ -3,9 +3,11 @@ package com.kollybistes.core.repositories;
 import com.kollybistes.common.models.BitcoinWallet;
 import com.kollybistes.common.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository
 public interface BitcoinWalletRepository extends JpaRepository<BitcoinWallet, Long> {
     Optional<BitcoinWallet> findByUser(User user);
 
