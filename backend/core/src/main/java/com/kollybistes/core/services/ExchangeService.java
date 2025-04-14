@@ -56,24 +56,27 @@ public class ExchangeService {
     }
 
     /**
-     * Fetches the recommended Ethereum gas price. Comes in gwei hence divided up by 1 Billion
-     * (1 ETH = 1,000,000,000 gwei).
+     * Fetches the recommended Ethereum gas price (in gwei), converts it to wei (1 gwei = 1,000,000,000 wei),
+     * and returns it as a BigInteger.
      */
-    public BigDecimal getRecommendedEthereumGasFee() {
-
-        try{
+    public BigInteger getRecommendedEthereumGasFee() {
+        try {
             String response = restTemplate.getForObject(ethereumGasApiUrl, String.class);
             assert response != null;
             JSONObject jsonResponse = new JSONObject(response);
 
-            return jsonResponse.getJSONObject("data")
+            BigDecimal gasPriceGwei = jsonResponse.getJSONObject("data")
                     .getJSONObject("suggested_transaction_fee_gwei_options")
-                    .getBigDecimal("cheetah")
-                    .divide(BigDecimal.valueOf(1000000000L));
-        }catch(Exception e){
+                    .getBigDecimal("cheetah");
+
+            // Convert gwei to wei: gwei * 1_000_000_000
+            return gasPriceGwei.multiply(BigDecimal.valueOf(1_000_000_000L)).toBigInteger();
+
+        } catch (Exception e) {
             throw new RuntimeException("Failed to get the recommended ETH transaction fee");
         }
     }
+
 
 }
 

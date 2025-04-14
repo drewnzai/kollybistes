@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 
 @Entity
@@ -19,7 +19,7 @@ public class EthereumWallet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String address;
-    private BigDecimal balance;
+    private BigInteger balance;
     private String privateKey;
     private String publicKey;
     @CreationTimestamp

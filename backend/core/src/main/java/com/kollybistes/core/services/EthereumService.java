@@ -16,9 +16,7 @@ import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
-import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 import org.web3j.tx.RawTransactionManager;
-import org.web3j.utils.Convert;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -36,16 +34,19 @@ public class EthereumService {
     private final EthereumRepository ethereumRepository;
     private final NotificationProducer notificationProducer;
     private final ExchangeService exchangeService;
+
     private static final BigDecimal TRANSACTION_FEE_PERCENT = new BigDecimal("0.15");
+
     @Value("${system.eth.address}")
     private String systemAddress;
+
     @Value("${system.eth.chainId}")
     private String chainId;
 
     public WalletDto createWallet() throws Exception {
         User user = authService.getCurrentUser();
 
-        if(ethereumRepository.existsByUser(user)){
+        if (ethereumRepository.existsByUser(user)) {
             throw new Exception("User already has an Ethereum account");
         }
 
@@ -54,7 +55,7 @@ public class EthereumService {
 
         EthereumWallet ethereumWallet = new EthereumWallet();
         ethereumWallet.setUser(user);
-        ethereumWallet.setBalance(BigDecimal.valueOf(0L));
+        ethereumWallet.setBalance(BigInteger.ZERO); // in wei
         ethereumWallet.setPrivateKey(keyPair.getPrivateKey().toString(16));
         ethereumWallet.setPublicKey(keyPair.getPublicKey().toString(16));
         ethereumWallet.setAddress("0x" + walletFile.getAddress());
@@ -74,9 +75,9 @@ public class EthereumService {
         ethereumRepository.save(ethereumWallet);
 
         return WalletDto.builder()
-                        .balance(ethereumWallet.getBalance())
-                                .address(ethereumWallet.getAddress())
-                                        .build();
+                .balance(convertWeiToEth(ethereumWallet.getBalance())) // in wei
+                .address(ethereumWallet.getAddress())
+                .build();
     }
 
     public TransactionDto sendEthToOutsideWallet(String recipientAddress, BigDecimal amountInEth) throws Exception {
@@ -93,33 +94,33 @@ public class EthereumService {
         }
 
         BigInteger balanceWei = balanceResponse.getBalance();
-        BigDecimal balanceEther = Convert.fromWei(balanceWei.toString(), Convert.Unit.ETHER);
 
-        ethereumWallet.setBalance(balanceEther);
+        ethereumWallet.setBalance(balanceWei);
+        ethereumRepository.save(ethereumWallet);
 
-        // 15% transaction fee to be paid to system wallet
-        BigDecimal systemFeeAmount = amountInEth.multiply(TRANSACTION_FEE_PERCENT);
+        BigInteger amountInWei = convertEthToWei(amountInEth);
 
-        // Get recommended gas price from ExchangeService (*2 for two transactions)
-        BigDecimal recommendedGasPrice = exchangeService.getRecommendedEthereumGasFee();
-        BigDecimal gasLimit = BigDecimal.valueOf(21000L); // standard for ETH transfer
-        BigDecimal gasCost = recommendedGasPrice.multiply(gasLimit);
-        BigDecimal totalTransactionFees = gasCost
-                .multiply(BigDecimal.valueOf(2L));
+        // Calculate 15% system fee (in wei)
+        BigDecimal systemFeeEth = amountInEth.multiply(TRANSACTION_FEE_PERCENT);
+        BigInteger systemFeeWei = convertEthToWei(systemFeeEth);
 
-        BigDecimal finalAmount = amountInEth.add(systemFeeAmount).add(gasCost);
+        // Estimate gas fees
+        BigInteger gasPriceWei = exchangeService.getRecommendedEthereumGasFee(); // in wei
+        BigInteger gasLimit = BigInteger.valueOf(21000L);
+        BigInteger totalGasFees = gasPriceWei.multiply(gasLimit).multiply(BigInteger.TWO);
 
-        if (finalAmount.compareTo(ethereumWallet.getBalance()) > 0) {
+        BigInteger totalCost = amountInWei.add(systemFeeWei).add(totalGasFees);
+
+        if (totalCost.compareTo(balanceWei) > 0) {
             throw new Exception("User does not have the necessary balance");
         }
 
         return TransactionDto.builder()
-                .amount(amountInEth)
+                .amount(convertWeiToEth(amountInWei))
                 .recipientAddress(recipientAddress)
-                .feesDto(new FeesDto(systemFeeAmount,
-                        totalTransactionFees,
-                        recommendedGasPrice.toBigInteger()))
-                .expectedBalance(ethereumWallet.getBalance().subtract(finalAmount))
+                .feesDto(new FeesDto(convertWeiToEth(systemFeeWei),
+                        convertWeiToEth(totalGasFees), gasPriceWei))
+                .expectedBalance(convertWeiToEth(balanceWei.subtract(totalCost)))
                 .build();
     }
 
@@ -129,44 +130,35 @@ public class EthereumService {
         EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
                 .orElseThrow(() -> new Exception("User does not have an Ethereum wallet"));
 
-        if(ethereumWallet.isTradingLocked()){
-           throw new Exception("User's ETH wallet is currently in a transaction");
+        if (ethereumWallet.isTradingLocked()) {
+            throw new Exception("User's ETH wallet is currently in a transaction");
         }
 
         ethereumWallet.setTradingLocked(true);
         ethereumRepository.save(ethereumWallet);
 
         // Division by 42000 (2*21000) to get the gas fee used for individual transactions
-        BigDecimal individualGasCost = transactionDto.getFeesDto()
-                .getTransactionFee()
-                .divide(BigDecimal.valueOf(42000L));
+        BigInteger gasPriceWei = convertEthToWei(transactionDto.getFeesDto()
+                .getTransactionFee().divide(BigDecimal.valueOf(42000L)));
 
-        BigInteger gasPriceWei = Convert.toWei(individualGasCost, Convert.Unit.ETHER).toBigInteger();
-
-        EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(
-                ethereumWallet.getAddress(), DefaultBlockParameterName.LATEST).sendAsync().get();
-
-        BigInteger nonce = ethGetTransactionCount.getTransactionCount();
+        BigInteger nonce = web3j.ethGetTransactionCount(
+                ethereumWallet.getAddress(),
+                DefaultBlockParameterName.LATEST).send().getTransactionCount();
 
         Credentials credentials = Credentials.create(ethereumWallet.getPrivateKey());
-
         RawTransactionManager txManager = new RawTransactionManager(web3j, credentials, Long.parseLong(chainId));
-        RawTransaction toSystem  = RawTransaction.createEtherTransaction(
-                nonce,  gasPriceWei,
-                BigInteger.valueOf(21000L),
-                systemAddress,
-                Convert.toWei(transactionDto.getFeesDto().getSystemFee(), Convert.Unit.ETHER)
-                .toBigInteger());
+
+        RawTransaction toSystem = RawTransaction.createEtherTransaction(
+                nonce, gasPriceWei, BigInteger.valueOf(21000L),
+                systemAddress, convertEthToWei(transactionDto.getFeesDto().getSystemFee()));
 
         String toSystemHash = txManager.signAndSend(toSystem).getTransactionHash();
 
         nonce = nonce.add(BigInteger.ONE);
 
-        RawTransaction toRecipient  = RawTransaction.createEtherTransaction(
-                nonce, gasPriceWei,
-                BigInteger.valueOf(21000L),
-                transactionDto.getRecipientAddress(),
-                Convert.toWei(transactionDto.getAmount(), Convert.Unit.ETHER).toBigInteger());
+        RawTransaction toRecipient = RawTransaction.createEtherTransaction(
+                nonce, gasPriceWei, BigInteger.valueOf(21000L),
+                transactionDto.getRecipientAddress(), convertEthToWei(transactionDto.getAmount()));
 
         String toRecipientHash = txManager.signAndSend(toRecipient).getTransactionHash();
 
@@ -181,9 +173,17 @@ public class EthereumService {
         return txDetails;
     }
 
-    public BigDecimal getBalance(String address) throws Exception {
+    public BigInteger getBalance(String address) throws Exception {
         EthGetBalance balance = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
-        return Convert.fromWei(new BigDecimal(balance.getBalance()), Convert.Unit.ETHER);
+        return balance.getBalance(); // in wei
+    }
+
+    private BigDecimal convertWeiToEth(BigInteger wei) {
+        return new BigDecimal(wei).divide(BigDecimal.TEN.pow(18));
+    }
+
+    private BigInteger convertEthToWei(BigDecimal eth) {
+        return eth.multiply(BigDecimal.TEN.pow(18)).toBigInteger();
     }
 
 }
