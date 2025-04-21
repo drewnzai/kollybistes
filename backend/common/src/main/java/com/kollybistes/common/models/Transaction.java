@@ -1,6 +1,7 @@
 package com.kollybistes.common.models;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -12,6 +13,7 @@ import java.util.Date;
 @Entity
 @Table(name = "transactions")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Transaction {
