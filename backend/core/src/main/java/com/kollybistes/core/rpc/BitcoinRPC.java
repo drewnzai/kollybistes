@@ -142,4 +142,32 @@ public class BitcoinRPC {
         String sendTxResponse = sendRequest("sendrawtransaction", new Object[]{signedTxHex}, fromWallet);
         return new JSONObject(sendTxResponse).getString("result"); // TXID
     }
+
+    public BigInteger updateBalance(BitcoinWallet bitcoinWallet){
+        BigInteger updated = getTrustedAddressBalance(bitcoinWallet
+                        .getUser()
+                        .getUsername());
+
+        return updated;
+    }
+
+    public String estimateP2WPKHTransactionSize(int inputCount, int outputCount) {
+        final int TX_OVERHEAD = 11;             // Version + locktime + input/output counts
+        final int P2WPKH_INPUT_SIZE = 68;       // P2WPKH input size in vbytes
+        final int P2WPKH_OUTPUT_SIZE = 31;      // P2WPKH output size in vbytes
+
+        int totalSize = TX_OVERHEAD
+                + (inputCount * P2WPKH_INPUT_SIZE)
+                + (outputCount * P2WPKH_OUTPUT_SIZE);
+
+        return String.valueOf(totalSize); // size in vbytes
+    }
+
+    public BigInteger convertBtcToSats(BigDecimal btc) {
+        return btc.multiply(BigDecimal.valueOf(100_000_000L)).toBigInteger();
+    }
+
+    public BigDecimal convertSatsToBtc(BigInteger sats) {
+        return new BigDecimal(sats).divide(BigDecimal.valueOf(100_000_000L));
+    }
 }

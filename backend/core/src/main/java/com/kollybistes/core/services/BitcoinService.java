@@ -57,7 +57,7 @@ public class BitcoinService {
 
         return WalletDto.builder()
                 .address(bitcoinWallet.getAddress())
-                .balance(convertSatsToBtc(BigInteger.ZERO))
+                .balance(BigDecimal.ZERO)
                 .build();
     }
 
@@ -72,7 +72,7 @@ public class BitcoinService {
 
         return WalletDto.builder()
                 .address(bitcoinWallet.getAddress())
-                .balance(convertSatsToBtc(bitcoinWallet.getBalance()))
+                .balance(bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()))
                 .build();
     }
 
@@ -82,29 +82,32 @@ public class BitcoinService {
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
                 .orElseThrow(() -> new Exception("User does not have a Bitcoin wallet"));
 
-        BigInteger amountSat = convertBtcToSats(amount);
+        bitcoinWallet.setBalance(bitcoinRPC.updateBalance(bitcoinWallet));
+
+        BigInteger amountSat = bitcoinRPC.convertBtcToSats(amount);
         BigDecimal transactionFeeBtc = amount.multiply(TRANSACTION_FEE_PERCENT);
-        BigInteger transactionFeeSat = convertBtcToSats(transactionFeeBtc);
+        BigInteger transactionFeeSat = bitcoinRPC.convertBtcToSats(transactionFeeBtc);
 
         BigInteger feeRate = apiHandler.getRecommendedBitcoinFee(); // in sat/vB
-        BigInteger estimatedSize = new BigInteger(estimateP2WPKHTransactionSize(1, 2));
+        BigInteger estimatedSize = new BigInteger
+                (bitcoinRPC.estimateP2WPKHTransactionSize(1, 2));
         BigInteger networkFeeSat = feeRate.multiply(estimatedSize);
 
         BigInteger totalCost = amountSat.add(transactionFeeSat).add(networkFeeSat);
 
-        if (totalCost.compareTo(updateBalance(bitcoinWallet)) > 0) {
+        if (totalCost.compareTo(bitcoinWallet.getBalance()) > 0) {
             throw new Exception("Insufficient balance.");
         }
 
         return TransactionDto.builder()
-                .amount(convertSatsToBtc(amountSat))
+                .amount(bitcoinRPC.convertSatsToBtc(amountSat))
                 .recipientAddress(recipientAddress)
                 .feesDto(new FeesDto(
                         transactionFeeBtc,
-                        convertSatsToBtc(networkFeeSat),
+                        bitcoinRPC.convertSatsToBtc(networkFeeSat),
                         feeRate
                 ))
-                .expectedBalance(convertSatsToBtc(bitcoinWallet.getBalance().subtract(totalCost)))
+                .expectedBalance(bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance().subtract(totalCost)))
                 .build();
     }
 
@@ -125,7 +128,7 @@ public class BitcoinService {
 
         BigInteger satvBFeeRate = transactionDto.getFeesDto().getMeasure();
 
-        BigInteger systemFeeSats = convertBtcToSats(transactionDto.getFeesDto().getSystemFee());
+        BigInteger systemFeeSats = bitcoinRPC.convertBtcToSats(transactionDto.getFeesDto().getSystemFee());
 
         String toSystemHash = bitcoinRPC.sendBitcoinToSystem(
                 user.getUsername(),
@@ -141,7 +144,7 @@ public class BitcoinService {
                 toSystemHash
         );
 
-        BigInteger transactionAmountSats = convertBtcToSats(transactionDto.getAmount());
+        BigInteger transactionAmountSats = bitcoinRPC.convertBtcToSats(transactionDto.getAmount());
 
         String toRecipientHash = bitcoinRPC.sendBitcoin(
                 user.getUsername(),
@@ -157,7 +160,7 @@ public class BitcoinService {
                 toRecipientHash
         );
 
-        bitcoinWallet.setBalance(updateBalance(bitcoinWallet));
+        bitcoinWallet.setBalance(bitcoinRPC.updateBalance(bitcoinWallet));
         bitcoinWallet.setTradingLocked(false);
         bitcoinWalletRepository.save(bitcoinWallet);
 
@@ -166,39 +169,6 @@ public class BitcoinService {
         txHashes.put("Recipient's TX Hash", toRecipientHash);
 
         return txHashes;
-    }
-
-    private BigInteger updateBalance(BitcoinWallet bitcoinWallet){
-        BigInteger updated = bitcoinRPC
-                .getTrustedAddressBalance(bitcoinWallet
-                        .getUser()
-                        .getUsername());
-
-        bitcoinWallet.setBalance(updated);
-
-        bitcoinWalletRepository.save(bitcoinWallet);
-
-        return updated;
-    }
-
-    private String estimateP2WPKHTransactionSize(int inputCount, int outputCount) {
-        final int TX_OVERHEAD = 11;             // Version + locktime + input/output counts
-        final int P2WPKH_INPUT_SIZE = 68;       // P2WPKH input size in vbytes
-        final int P2WPKH_OUTPUT_SIZE = 31;      // P2WPKH output size in vbytes
-
-        int totalSize = TX_OVERHEAD
-                + (inputCount * P2WPKH_INPUT_SIZE)
-                + (outputCount * P2WPKH_OUTPUT_SIZE);
-
-        return String.valueOf(totalSize); // size in vbytes
-    }
-
-    private BigInteger convertBtcToSats(BigDecimal btc) {
-        return btc.multiply(BigDecimal.valueOf(100_000_000L)).toBigInteger();
-    }
-
-    private BigDecimal convertSatsToBtc(BigInteger sats) {
-        return new BigDecimal(sats).divide(BigDecimal.valueOf(100_000_000L));
     }
 
 }
