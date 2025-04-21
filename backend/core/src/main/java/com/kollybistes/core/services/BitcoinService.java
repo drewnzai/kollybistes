@@ -115,6 +115,13 @@ public class BitcoinService {
                         () -> new Exception("User does not have a Bitcoin wallet")
                 );
 
+        if(bitcoinWallet.isTradingLocked()){
+            throw new Exception("Wallet is currently in a transaction, try again later");
+        }
+
+        bitcoinWallet.setTradingLocked(true);
+        bitcoinWalletRepository.save(bitcoinWallet);
+
         BigInteger satvBFeeRate = transactionDto.getFeesDto().getMeasure();
 
         String toSystemHash = bitcoinRPC.sendBitcoinToSystem(
@@ -132,11 +139,12 @@ public class BitcoinService {
         );
 
         bitcoinWallet.setBalance(updateBalance(bitcoinWallet));
+        bitcoinWallet.setTradingLocked(false);
         bitcoinWalletRepository.save(bitcoinWallet);
 
         Map<String, String> txHashes = new HashMap<>();
-        txHashes.put("System TX Hash", toSystemHash);
-        txHashes.put("Recipient TX Hash", toRecipientHash);
+        txHashes.put("System's TX Hash", toSystemHash);
+        txHashes.put("Recipient's TX Hash", toRecipientHash);
 
         return txHashes;
     }

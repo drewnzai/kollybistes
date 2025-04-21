@@ -131,7 +131,7 @@ public class EthereumService {
                 .orElseThrow(() -> new Exception("User does not have an Ethereum wallet"));
 
         if (ethereumWallet.isTradingLocked()) {
-            throw new Exception("User's ETH wallet is currently in a transaction");
+            throw new Exception("Wallet is currently in a transaction, try again later");
         }
 
         ethereumWallet.setTradingLocked(true);
