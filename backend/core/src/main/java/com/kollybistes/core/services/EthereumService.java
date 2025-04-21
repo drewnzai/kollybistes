@@ -87,14 +87,8 @@ public class EthereumService {
         EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
                 .orElseThrow(() -> new Exception("User does not have an Ethereum wallet"));
 
-        EthGetBalance balanceResponse = web3j.ethGetBalance(ethereumWallet.getAddress(),
-                DefaultBlockParameterName.LATEST).send();
 
-        if (balanceResponse.hasError()) {
-            throw new Exception("Cannot retrieve ethereum balance from network");
-        }
-
-        BigInteger balanceWei = balanceResponse.getBalance();
+        BigInteger balanceWei = getBalance(ethereumWallet.getAddress());
 
         ethereumWallet.setBalance(balanceWei);
         ethereumRepository.save(ethereumWallet);
