@@ -12,7 +12,6 @@
     <modules>
         <module>core</module>
         <module>common</module>
-        <module>trade</module>
         <module>notification</module>
     </modules>
 
