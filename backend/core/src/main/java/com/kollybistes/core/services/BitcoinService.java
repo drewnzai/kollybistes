@@ -75,7 +75,7 @@ public class BitcoinService {
                 .build();
     }
 
-    public TransactionDto sendBitcoinToOutsideWallet(String recipientAddress, BigDecimal amount) throws Exception {
+    public TransactionDto calculateTransactionDetails(String recipientAddress, BigDecimal amount) throws Exception {
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
@@ -107,7 +107,7 @@ public class BitcoinService {
                 .build();
     }
 
-    public Object confirmTransaction(TransactionDto transactionDto) throws Exception {
+    public Object confirmTransactionToOutsideWallet(TransactionDto transactionDto) throws Exception {
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)

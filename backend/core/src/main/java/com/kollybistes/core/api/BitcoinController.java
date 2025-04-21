@@ -48,7 +48,7 @@ public class BitcoinController {
 //                    .error(e.getMessage())
 //                    .build();
 //        }
-        return bitcoinService.sendBitcoinToOutsideWallet(transactionDto.getRecipientAddress(),
+        return bitcoinService.calculateTransactionDetails(transactionDto.getRecipientAddress(),
                 transactionDto.getAmount());
     }
 
@@ -62,7 +62,7 @@ public class BitcoinController {
 //                    .error(e.getMessage())
 //                    .build();
 //        }
-        return bitcoinService.confirmTransaction(transactionDto);
+        return bitcoinService.confirmTransactionToOutsideWallet(transactionDto);
     }
 
 }

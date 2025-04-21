@@ -28,7 +28,7 @@ public class EthereumController {
     @PostMapping("send")
     public Object sendEthToOutsideWallet(@RequestBody TransactionDto transactionDto){
         try{
-            return ethereumService.sendEthToOutsideWallet(transactionDto.getRecipientAddress()
+            return ethereumService.calculateTransactionDetails(transactionDto.getRecipientAddress()
                     , transactionDto.getAmount());
         }
         catch(Exception e){
@@ -42,7 +42,7 @@ public class EthereumController {
     @PostMapping("confirm")
     public Object confirmTransaction(@RequestBody TransactionDto transactionDto){
         try{
-            return ethereumService.confirmTransaction(transactionDto);
+            return ethereumService.confirmTransactionToOutsideWallet(transactionDto);
         }catch(Exception e){
             return APIResponse
                     .builder()

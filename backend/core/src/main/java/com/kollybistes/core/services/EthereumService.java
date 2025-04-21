@@ -80,7 +80,7 @@ public class EthereumService {
                 .build();
     }
 
-    public TransactionDto sendEthToOutsideWallet(String recipientAddress, BigDecimal amountInEth) throws Exception {
+    public TransactionDto calculateTransactionDetails(String recipientAddress, BigDecimal amountInEth) throws Exception {
         User user = authService.getCurrentUser();
 
         EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
@@ -124,7 +124,7 @@ public class EthereumService {
                 .build();
     }
 
-    public Object confirmTransaction(TransactionDto transactionDto) throws Exception {
+    public Object confirmTransactionToOutsideWallet(TransactionDto transactionDto) throws Exception {
         User user = authService.getCurrentUser();
 
         EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
