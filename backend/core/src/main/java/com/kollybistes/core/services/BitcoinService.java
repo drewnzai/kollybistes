@@ -27,6 +27,7 @@ public class BitcoinService {
     private final AuthService authService;
     private final BitcoinRPC bitcoinRPC;
     private final ExchangeService exchangeService;
+    private final TransactionService transactionService;
     private final NotificationProducer notificationProducer;
 
     @Value("${system.btc.address}")
@@ -124,18 +125,36 @@ public class BitcoinService {
 
         BigInteger satvBFeeRate = transactionDto.getFeesDto().getMeasure();
 
+        BigInteger systemFeeSats = convertBtcToSats(transactionDto.getFeesDto().getSystemFee());
+
         String toSystemHash = bitcoinRPC.sendBitcoinToSystem(
                 user.getUsername(),
                 systemAddress,
-                convertBtcToSats(transactionDto.getFeesDto().getSystemFee()),
+                systemFeeSats,
                 satvBFeeRate
         );
+
+        transactionService.saveTransaction(
+                bitcoinWallet.getAddress(),
+                systemAddress,
+                systemFeeSats,
+                toSystemHash
+        );
+
+        BigInteger transactionAmountSats = convertBtcToSats(transactionDto.getAmount());
 
         String toRecipientHash = bitcoinRPC.sendBitcoin(
                 user.getUsername(),
                 transactionDto.getRecipientAddress(),
-                convertBtcToSats(transactionDto.getAmount()),
+                transactionAmountSats,
                 satvBFeeRate
+        );
+
+        transactionService.saveTransaction(
+                bitcoinWallet.getAddress(),
+                transactionDto.getRecipientAddress(),
+                transactionAmountSats,
+                toRecipientHash
         );
 
         bitcoinWallet.setBalance(updateBalance(bitcoinWallet));
