@@ -1,5 +1,5 @@
 package com.kollybistes.common.models;
 
-public enum TradeStatus {
+public enum ExchangeStatus {
     PENDING, COMPLETED, FAILED
 }

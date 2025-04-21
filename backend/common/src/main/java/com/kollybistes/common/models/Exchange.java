@@ -14,14 +14,14 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Trade {
+public class Exchange {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private TradeType tradeType; // BUY or SELL (BTC <-> ETH)
+    private ExchangeType exchangeType; // BUY or SELL (BTC <-> ETH)
 
     @ManyToOne
     private BitcoinWallet bitcoinWallet; // BTC wallet used in the trade
@@ -40,7 +40,7 @@ public class Trade {
     private BigDecimal totalCost; // Total cost including fees
 
     @Enumerated(EnumType.STRING)
-    private TradeStatus status; // PENDING, COMPLETED, FAILED
+    private ExchangeStatus status; // PENDING, COMPLETED, FAILED
 
     @CreationTimestamp
     @Column(name = "created_at")
