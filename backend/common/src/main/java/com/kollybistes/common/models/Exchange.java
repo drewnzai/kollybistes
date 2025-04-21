@@ -35,9 +35,9 @@ public class Exchange {
 
     private BigDecimal exchangeRate; // BTC/ETH exchange rate at the time of trade
 
-    private BigDecimal transactionFee; // 15% of the trade amount
+    private BigDecimal systemFee; // 15% of the trade amount
 
-    private BigDecimal gasFee; // Gas fee for faster transaction completion
+    private BigDecimal transactionFee; // Gas fee for faster transaction completion
 
     private BigDecimal totalCost; // Total cost including fees
 
