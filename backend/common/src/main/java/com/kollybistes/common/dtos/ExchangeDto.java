@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @Builder
 public class ExchangeDto {
     private String tradeType;
-    private BigDecimal amount;
+    private BigDecimal amountToExchange;
     private FeesDto feesDto;
     private BigDecimal expectedAmountGotten;
     private BigDecimal expectedBalance;
