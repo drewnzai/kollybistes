@@ -112,9 +112,7 @@ public class BitcoinService {
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
                 .orElseThrow(
-                        () -> {
-                            return new Exception("User does not have a Bitcoin wallet");
-                        }
+                        () -> new Exception("User does not have a Bitcoin wallet")
                 );
 
         BigInteger satvBFeeRate = transactionDto.getFeesDto().getMeasure();
