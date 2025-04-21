@@ -37,32 +37,29 @@ public class BitcoinController {
         }
     }
 
-    @PostMapping("send")
-    public Object sendBitcoinToOutsideWallet(@RequestBody TransactionDto transactionDto) throws Exception {
-//        try{
-//            return bitcoinService.sendBitcoinToOutsideWallet(transactionDto.getRecipientAddress(),
-//                    transactionDto.getAmount());
-//        }catch(Exception e){
-//            return APIResponse
-//                    .builder()
-//                    .error(e.getMessage())
-//                    .build();
-//        }
-        return bitcoinService.calculateTransactionDetails(transactionDto.getRecipientAddress(),
-                transactionDto.getAmount());
+    @PostMapping("calculate")
+    public Object calculateTransactionDetails(@RequestBody TransactionDto transactionDto) throws Exception {
+        try{
+            return bitcoinService.calculateTransactionDetails(transactionDto.getRecipientAddress(),
+                    transactionDto.getAmount());
+        }catch(Exception e){
+            return APIResponse
+                    .builder()
+                    .error(e.getMessage())
+                    .build();
+        }
     }
 
     @PostMapping("confirm")
     public Object confirmTransaction(@RequestBody TransactionDto transactionDto) throws Exception {
-//        try{
-//            return bitcoinService.confirmTransaction(transactionDto);
-//        }catch(Exception e){
-//            return APIResponse
-//                    .builder()
-//                    .error(e.getMessage())
-//                    .build();
-//        }
-        return bitcoinService.confirmTransactionToOutsideWallet(transactionDto);
+        try{
+            return bitcoinService.confirmTransactionToOutsideWallet(transactionDto);
+        }catch(Exception e){
+            return APIResponse
+                    .builder()
+                    .error(e.getMessage())
+                    .build();
+        }
     }
 
 }

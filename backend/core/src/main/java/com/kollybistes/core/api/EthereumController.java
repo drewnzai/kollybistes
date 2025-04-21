@@ -25,8 +25,8 @@ public class EthereumController {
         }
     }
 
-    @PostMapping("send")
-    public Object sendEthToOutsideWallet(@RequestBody TransactionDto transactionDto){
+    @PostMapping("calculate")
+    public Object calculateTransactionDetails(@RequestBody TransactionDto transactionDto){
         try{
             return ethereumService.calculateTransactionDetails(transactionDto.getRecipientAddress()
                     , transactionDto.getAmount());
