@@ -20,6 +20,7 @@ public class TransactionService {
                                 String recipient,
                                 BigInteger amount,
                                 String txHash){
+        
         Transaction transaction = Transaction.builder()
                 .senderWalletAddress(sender)
                 .recipientWalletAddress(recipient)
