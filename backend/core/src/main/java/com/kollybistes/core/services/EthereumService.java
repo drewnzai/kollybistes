@@ -186,7 +186,7 @@ public class EthereumService {
         return txDetails;
     }
 
-    public BigInteger getBalance(String address) throws Exception {
+    private BigInteger getBalance(String address) throws Exception {
         EthGetBalance balance = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
         return balance.getBalance(); // in wei
     }
