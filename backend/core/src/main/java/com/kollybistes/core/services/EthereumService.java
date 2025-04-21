@@ -34,7 +34,7 @@ public class EthereumService {
     private final EthereumRepository ethereumRepository;
     private final TransactionService transactionService;
     private final NotificationProducer notificationProducer;
-    private final ExchangeService exchangeService;
+    private final APIHandler apiHandler;
 
     private static final BigDecimal TRANSACTION_FEE_PERCENT = new BigDecimal("0.15");
 
@@ -106,7 +106,7 @@ public class EthereumService {
         BigInteger systemFeeWei = convertEthToWei(systemFeeEth);
 
         // Estimate gas fees
-        BigInteger gasPriceWei = exchangeService.getRecommendedEthereumGasFee(); // in wei
+        BigInteger gasPriceWei = apiHandler.getRecommendedEthereumGasFee(); // in wei
         BigInteger gasLimit = BigInteger.valueOf(21000L);
         BigInteger totalGasFees = gasPriceWei.multiply(gasLimit).multiply(BigInteger.TWO);
 

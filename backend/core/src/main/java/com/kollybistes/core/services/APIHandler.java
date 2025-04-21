@@ -11,7 +11,7 @@ import java.math.BigInteger;
 
 @Service
 @RequiredArgsConstructor
-public class ExchangeService {
+public class APIHandler {
 
     private final RestTemplate restTemplate;
 
