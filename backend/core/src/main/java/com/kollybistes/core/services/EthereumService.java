@@ -32,6 +32,7 @@ public class EthereumService {
     private final Web3j web3j;
     private final AuthService authService;
     private final EthereumRepository ethereumRepository;
+    private final TransactionService transactionService;
     private final NotificationProducer notificationProducer;
     private final ExchangeService exchangeService;
 
@@ -148,19 +149,37 @@ public class EthereumService {
         Credentials credentials = Credentials.create(ethereumWallet.getPrivateKey());
         RawTransactionManager txManager = new RawTransactionManager(web3j, credentials, Long.parseLong(chainId));
 
+        BigInteger systemFeeWei = convertEthToWei(transactionDto.getFeesDto().getSystemFee());
+
         RawTransaction toSystem = RawTransaction.createEtherTransaction(
                 nonce, gasPriceWei, BigInteger.valueOf(21000L),
-                systemAddress, convertEthToWei(transactionDto.getFeesDto().getSystemFee()));
+                systemAddress, systemFeeWei);
 
         String toSystemHash = txManager.signAndSend(toSystem).getTransactionHash();
 
+        transactionService.saveTransaction(
+                ethereumWallet.getAddress(),
+                systemAddress,
+                systemFeeWei,
+                toSystemHash
+        );
+
         nonce = nonce.add(BigInteger.ONE);
+
+        BigInteger transactionAmountWei = convertEthToWei(transactionDto.getAmount());
 
         RawTransaction toRecipient = RawTransaction.createEtherTransaction(
                 nonce, gasPriceWei, BigInteger.valueOf(21000L),
-                transactionDto.getRecipientAddress(), convertEthToWei(transactionDto.getAmount()));
+                transactionDto.getRecipientAddress(), transactionAmountWei);
 
         String toRecipientHash = txManager.signAndSend(toRecipient).getTransactionHash();
+
+        transactionService.saveTransaction(
+                ethereumWallet.getAddress(),
+                transactionDto.getRecipientAddress(),
+                transactionAmountWei,
+                toRecipientHash
+        );
 
         ethereumWallet.setTradingLocked(false);
         ethereumWallet.setBalance(getBalance(ethereumWallet.getAddress()));

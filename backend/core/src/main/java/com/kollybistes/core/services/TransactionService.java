@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Date;
 
@@ -18,7 +18,7 @@ public class TransactionService {
     @Async
     public void saveTransaction(String sender,
                                 String recipient,
-                                BigDecimal amount,
+                                BigInteger amount,
                                 String txHash){
         Transaction transaction = Transaction.builder()
                 .senderWalletAddress(sender)
