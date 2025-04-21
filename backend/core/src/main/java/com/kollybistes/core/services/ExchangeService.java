@@ -117,10 +117,10 @@ public class ExchangeService {
         // Estimate gas fees
         BigInteger gasPriceWei = apiHandler.getRecommendedEthereumGasFee(); // in wei
         BigInteger gasLimit = BigInteger.valueOf(21000L);
-        BigInteger totalGasFees = gasPriceWei.multiply(gasLimit).multiply(BigInteger.TWO);
+        BigInteger totalGasFees = gasPriceWei.multiply(gasLimit);
 
         BigDecimal exchangeRate = apiHandler.getBtcToEthExchangeRate();
-        BigDecimal expectedReturnBtc = amountInEth.divide(exchangeRate);
+        BigDecimal expectedReturnBtc = exchangeRate.divide(amountInEth);
 
         BigInteger totalCost = amountInWei.add(systemFeeWei).add(totalGasFees);
 
