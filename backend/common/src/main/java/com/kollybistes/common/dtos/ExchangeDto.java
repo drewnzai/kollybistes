@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Builder
 public class ExchangeDto {
-    private String tradeType;
+    private String exchangeType;
     private BigDecimal amountToExchange;
     private FeesDto feesDto;
     private BigDecimal expectedAmountGotten;
