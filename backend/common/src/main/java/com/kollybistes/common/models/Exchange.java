@@ -31,7 +31,9 @@ public class Exchange {
     @ManyToOne
     private EthereumWallet ethereumWallet; // ETH wallet used in the trade
 
-    private BigDecimal amount; // Amount of crypto traded
+    private BigDecimal amountGiven; // Amount of crypto traded
+
+    private BigDecimal amountGotten; // Amount of crypto received
 
     private BigDecimal exchangeRate; // BTC/ETH exchange rate at the time of trade
 

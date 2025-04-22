@@ -17,4 +17,5 @@ public class ExchangeDto {
     private FeesDto feesDto;
     private BigDecimal expectedAmountGotten;
     private BigDecimal expectedBalance;
+    private BigDecimal rate;
 }
