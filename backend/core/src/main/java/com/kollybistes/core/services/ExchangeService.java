@@ -78,7 +78,8 @@ public class ExchangeService {
                 .convertSatsToBtc(bitcoinWallet.getBalance().subtract(totalCost));
 
         if (totalCost.compareTo(bitcoinWallet.getBalance()) > 0) {
-            throw new Exception("Insufficient balance.");
+            throw new Exception("Insufficient balance. You have "
+                    + bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()).toString());
         }
 
         return ExchangeDto.builder()
@@ -125,7 +126,8 @@ public class ExchangeService {
         BigInteger totalCost = amountInWei.add(systemFeeWei).add(totalGasFees);
 
         if (totalCost.compareTo(balanceWei) > 0) {
-            throw new Exception("User does not have the necessary balance");
+            throw new Exception("Insufficient balance. You have "
+            + convertWeiToEth(balanceWei).toString());
         }
 
         return ExchangeDto.builder()
