@@ -107,7 +107,8 @@ public class EthereumService {
         BigInteger totalCost = amountInWei.add(systemFeeWei).add(totalGasFees);
 
         if (totalCost.compareTo(balanceWei) > 0) {
-            throw new Exception("User does not have the necessary balance");
+            throw new Exception("User does not have the necessary balance. You have "
+                    + convertWeiToEth(balanceWei).toString());
         }
 
         return TransactionDto.builder()
@@ -129,12 +130,25 @@ public class EthereumService {
             throw new Exception("Wallet is currently in a transaction, try again later");
         }
 
+        BigInteger balanceWei = getBalance(ethereumWallet.getAddress());
+
+        ethereumWallet.setBalance(balanceWei);
         ethereumWallet.setTradingLocked(true);
         ethereumRepository.save(ethereumWallet);
 
         // Division by 42000 (2*21000) to get the gas fee used for individual transactions
         BigInteger gasPriceWei = convertEthToWei(transactionDto.getFeesDto()
                 .getTransactionFee().divide(BigDecimal.valueOf(42000L)));
+
+        BigDecimal totalFeesEth = transactionDto
+                .getFeesDto().getSystemFee().add(transactionDto.getFeesDto().getTransactionFee());
+        BigDecimal totalEth = transactionDto.getAmount().add(totalFeesEth);
+        BigInteger totalWei = convertEthToWei(totalEth);
+
+        if (totalWei.compareTo(balanceWei) > 0) {
+            throw new Exception("User does not have the necessary balance. You have "
+                    + convertWeiToEth(balanceWei).toString());
+        }
 
         BigInteger nonce = web3j.ethGetTransactionCount(
                 ethereumWallet.getAddress(),
