@@ -31,6 +31,10 @@ public class BitcoinRPC {
     @Value("${bitcoin.rpc.password}")
     private String password;
 
+
+    @Value("${system.btc.wallet-name}")
+    private String systemWalletName;
+
     private final AuthService authService;
     private final RestTemplate restTemplate;
 
@@ -106,11 +110,11 @@ public class BitcoinRPC {
         return balanceBTC.multiply(BigDecimal.valueOf(100_000_000L)).toBigInteger();
     }
 
-    public String sendBitcoin(String fromWallet, String toAddress, BigInteger amountSat, BigInteger feeRate) {
-        return sendBitcoinWithCustomFee(fromWallet, toAddress, amountSat, feeRate);
+    public String sendBitcoinFromSystem(String toAddress, BigInteger amountSat, BigInteger feeRate) {
+        return sendBitcoinWithCustomFee(systemWalletName, toAddress, amountSat, feeRate);
     }
 
-    public String sendBitcoinToSystem(String fromWallet, String toAddress, BigInteger amountSat, BigInteger feeRate) {
+    public String sendBitcoin(String fromWallet, String toAddress, BigInteger amountSat, BigInteger feeRate) {
         return sendBitcoinWithCustomFee(fromWallet, toAddress, amountSat, feeRate);
     }
 

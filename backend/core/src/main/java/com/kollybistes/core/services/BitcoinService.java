@@ -142,7 +142,7 @@ public class BitcoinService {
 
         BigInteger systemFeeSats = bitcoinRPC.convertBtcToSats(transactionDto.getFeesDto().getSystemFee());
 
-        String toSystemHash = bitcoinRPC.sendBitcoinToSystem(
+        String toSystemHash = bitcoinRPC.sendBitcoin(
                 user.getUsername(),
                 systemAddress,
                 systemFeeSats,
