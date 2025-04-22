@@ -23,6 +23,7 @@ import org.web3j.utils.Convert;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
@@ -56,6 +57,8 @@ public class ExchangeService {
 
 
     private static final BigDecimal TRANSACTION_FEE_PERCENT = new BigDecimal("0.15");
+    private static final BigDecimal MIN_BTC_AMOUNT = new BigDecimal("0.000012"); // ~1,200 sats
+    private static final BigDecimal MIN_ETH_AMOUNT = new BigDecimal("0.00061");  // ~610,000,000,000,000 wei
 
     public ExchangeDto calculateExchangeDetails(ExchangeDto exchangeDto) throws Exception {
         if(exchangeDto.getExchangeType().equals("BTC_TO_ETH")){
@@ -82,6 +85,11 @@ public class ExchangeService {
     }
 
     private ExchangeDto calculateBtcToEth(ExchangeDto exchangeDto) throws Exception {
+
+        if (exchangeDto.getAmountToExchange().compareTo(MIN_BTC_AMOUNT) < 0) {
+            throw new Exception("Exchange amount is too low. Minimum is " + MIN_BTC_AMOUNT + " BTC.");
+        }
+
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
@@ -130,6 +138,11 @@ public class ExchangeService {
     }
 
     private ExchangeDto calculateEthToBtc(ExchangeDto exchangeDto) throws Exception{
+
+        if (exchangeDto.getAmountToExchange().compareTo(MIN_ETH_AMOUNT) < 0) {
+            throw new Exception("Exchange amount is too low. Minimum is " + MIN_ETH_AMOUNT + " ETH.");
+        }
+
         User user = authService.getCurrentUser();
 
         EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
@@ -152,8 +165,10 @@ public class ExchangeService {
         BigInteger gasLimit = BigInteger.valueOf(21000L);
         BigInteger totalGasFees = gasPriceWei.multiply(gasLimit);
 
-        BigDecimal exchangeRate = apiHandler.getBtcToEthExchangeRate();
-        BigDecimal expectedReturnBtc = exchangeRate.divide(amountInEth);
+        BigDecimal exchangeRateBtcToEth = apiHandler.getBtcToEthExchangeRate();
+        BigDecimal exchangeRateEthToBtc = BigDecimal.ONE.divide
+                (exchangeRateBtcToEth, new MathContext(10));
+        BigDecimal expectedReturnBtc = exchangeRateEthToBtc.multiply(amountInEth);
 
         BigInteger totalCost = amountInWei.add(systemFeeWei).add(totalGasFees);
 
@@ -173,11 +188,16 @@ public class ExchangeService {
                         new FeesDto(convertWeiToEth(systemFeeWei),
                                 convertWeiToEth(totalGasFees), gasPriceWei)
                 )
-                .rate(exchangeRate.divide(BigDecimal.ONE))
+                .rate(exchangeRateEthToBtc)
                 .build();
     }
 
     private Object confirmBtcToEth(ExchangeDto exchangeDto) throws Exception {
+
+        if (exchangeDto.getAmountToExchange().compareTo(MIN_BTC_AMOUNT) < 0) {
+            throw new Exception("Exchange amount is too low. Minimum is " + MIN_BTC_AMOUNT + " BTC.");
+        }
+
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
@@ -252,6 +272,11 @@ public class ExchangeService {
     }
 
     private Object confirmEthToBtc(ExchangeDto exchangeDto) throws Exception {
+
+        if (exchangeDto.getAmountToExchange().compareTo(MIN_ETH_AMOUNT) < 0) {
+            throw new Exception("Exchange amount is too low. Minimum is " + MIN_ETH_AMOUNT + " ETH.");
+        }
+
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
