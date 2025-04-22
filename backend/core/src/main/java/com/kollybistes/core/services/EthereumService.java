@@ -135,10 +135,8 @@ public class EthereumService {
         ethereumWallet.setBalance(balanceWei);
         ethereumWallet.setTradingLocked(true);
         ethereumRepository.save(ethereumWallet);
-
-        // Division by 42000 (2*21000) to get the gas fee used for individual transactions
-        BigInteger gasPriceWei = convertEthToWei(transactionDto.getFeesDto()
-                .getTransactionFee().divide(BigDecimal.valueOf(42000L)));
+        
+        BigInteger gasPriceWei = transactionDto.getFeesDto().getMeasure();
 
         BigDecimal totalFeesEth = transactionDto
                 .getFeesDto().getSystemFee().add(transactionDto.getFeesDto().getTransactionFee());
