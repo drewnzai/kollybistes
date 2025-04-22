@@ -96,7 +96,7 @@ public class BitcoinService {
         BigInteger totalCost = amountSat.add(transactionFeeSat).add(networkFeeSat);
 
         if (totalCost.compareTo(bitcoinWallet.getBalance()) > 0) {
-            throw new Exception("Insufficient balance.");
+            throw new Exception("Insufficient balance. You have " + bitcoinWallet.getBalance().toString());
         }
 
         return TransactionDto.builder()
@@ -124,7 +124,17 @@ public class BitcoinService {
         }
 
         bitcoinWallet.setTradingLocked(true);
+        bitcoinWallet.setBalance(bitcoinRPC.updateBalance(bitcoinWallet));
         bitcoinWalletRepository.save(bitcoinWallet);
+
+        BigDecimal totalFeesBtc = transactionDto
+                .getFeesDto().getSystemFee().add(transactionDto.getFeesDto().getTransactionFee());
+        BigDecimal totalBtc = transactionDto.getAmount().add(totalFeesBtc);
+        BigInteger totalSats = bitcoinRPC.convertBtcToSats(totalBtc);
+
+        if(totalSats.compareTo(bitcoinWallet.getBalance()) > 0){
+            throw new Exception("Insufficient balance. You have " + bitcoinWallet.getBalance().toString());
+        }
 
         BigInteger satvBFeeRate = transactionDto.getFeesDto().getMeasure();
 
