@@ -107,7 +107,7 @@ public class EthereumService {
         BigInteger totalCost = amountInWei.add(systemFeeWei).add(totalGasFees);
 
         if (totalCost.compareTo(balanceWei) > 0) {
-            throw new Exception("User does not have the necessary balance. You have "
+            throw new Exception("Insufficient balance. You have "
                     + convertWeiToEth(balanceWei).toString());
         }
 
@@ -146,7 +146,7 @@ public class EthereumService {
         BigInteger totalWei = convertEthToWei(totalEth);
 
         if (totalWei.compareTo(balanceWei) > 0) {
-            throw new Exception("User does not have the necessary balance. You have "
+            throw new Exception("Insufficient balance. You have "
                     + convertWeiToEth(balanceWei).toString());
         }
 
