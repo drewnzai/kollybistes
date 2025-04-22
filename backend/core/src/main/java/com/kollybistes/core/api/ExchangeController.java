@@ -28,4 +28,19 @@ public class ExchangeController {
                     .build();
         }
     }
+
+    @PostMapping("confirm")
+    public Object confirmExchange(@RequestBody ExchangeDto exchangeDto){
+        try{
+            return exchangeService.confirmExchange(exchangeDto);
+        }
+        catch(Exception e){
+            return APIResponse
+                    .builder()
+                    .error(e.getMessage())
+                    .build();
+        }
+        
+        
+    }
 }
