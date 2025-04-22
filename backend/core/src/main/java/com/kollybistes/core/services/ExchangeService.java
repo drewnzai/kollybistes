@@ -220,9 +220,11 @@ public class ExchangeService {
 
         Credentials credentials = loadSystemWalletCredentials();
 
+        BigInteger gasPriceWei = apiHandler.getRecommendedEthereumGasFee();
+
         String recipientHash = sendEtherToAddress(ethereumWallet.getAddress(),
                 exchangeDto.getExpectedAmountGotten(),
-                exchangeDto.getFeesDto().getMeasure(),
+                gasPriceWei,
                 credentials
                 );
 
