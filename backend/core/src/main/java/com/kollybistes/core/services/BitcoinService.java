@@ -152,9 +152,11 @@ public class BitcoinService {
         }
 
         BigDecimal updatedBalanceBtc = bitcoinRPC.updateBalance(bitcoinWallet);
+        BigInteger updatedBalanceSats = Converter.convertBtcToSats(bitcoinWallet.getBalance());
+        
         bitcoinWallet.setTradingLocked(true);
         bitcoinWallet.setBalance(updatedBalanceBtc);
-        BigInteger updatedBalanceSats = Converter.convertBtcToSats(bitcoinWallet.getBalance());
+
 
         bitcoinWalletRepository.save(bitcoinWallet);
 
