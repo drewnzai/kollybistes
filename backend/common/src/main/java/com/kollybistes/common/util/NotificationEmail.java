@@ -1,4 +1,4 @@
-package com.kollybistes.common.models;
+package com.kollybistes.common.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

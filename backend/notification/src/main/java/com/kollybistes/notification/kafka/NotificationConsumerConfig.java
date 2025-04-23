@@ -1,6 +1,6 @@
 package com.kollybistes.notification.kafka;
 
-import com.kollybistes.common.models.NotificationEmail;
+import com.kollybistes.common.util.NotificationEmail;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;

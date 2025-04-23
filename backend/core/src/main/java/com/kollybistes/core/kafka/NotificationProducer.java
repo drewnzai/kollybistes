@@ -1,6 +1,6 @@
 package com.kollybistes.core.kafka;
 
-import com.kollybistes.common.models.NotificationEmail;
+import com.kollybistes.common.util.NotificationEmail;
 import lombok.AllArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;

@@ -5,7 +5,7 @@ import com.kollybistes.common.dtos.FeesDto;
 import com.kollybistes.common.dtos.TransactionDto;
 import com.kollybistes.common.dtos.WalletDto;
 import com.kollybistes.common.models.EthereumWallet;
-import com.kollybistes.common.models.NotificationEmail;
+import com.kollybistes.common.util.NotificationEmail;
 import com.kollybistes.common.models.User;
 import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.EthereumRepository;

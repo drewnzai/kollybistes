@@ -4,7 +4,7 @@ import com.kollybistes.common.dtos.LoginRequest;
 import com.kollybistes.common.dtos.LoginResponse;
 import com.kollybistes.common.dtos.RefreshTokenRequest;
 import com.kollybistes.common.dtos.RegisterRequest;
-import com.kollybistes.common.models.NotificationEmail;
+import com.kollybistes.common.util.NotificationEmail;
 import com.kollybistes.common.models.RefreshToken;
 import com.kollybistes.common.models.User;
 import com.kollybistes.common.models.VerificationToken;

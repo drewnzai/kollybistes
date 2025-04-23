@@ -1,7 +1,7 @@
 package com.kollybistes.notification.services;
 
 
-import com.kollybistes.common.models.NotificationEmail;
+import com.kollybistes.common.util.NotificationEmail;
 import lombok.AllArgsConstructor;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
