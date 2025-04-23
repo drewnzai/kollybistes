@@ -118,7 +118,7 @@ public class BitcoinRPC {
 
     private String sendBitcoinWithCustomFee(String fromWallet, String toAddress, BigInteger amountSat, BigInteger feeRate) {
         // Convert satoshis to BTC for the RPC call (RPC only accepts decimal BTC values)
-        BigDecimal amountBTC = new BigDecimal(amountSat).divide(BigDecimal.valueOf(100_000_000L));
+        BigDecimal amountBTC = Converter.convertSatsToBtc(amountSat);
 
         Map<String, Object> outputs = new HashMap<>();
         outputs.put(toAddress, amountBTC);
