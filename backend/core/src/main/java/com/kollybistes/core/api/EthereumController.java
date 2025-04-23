@@ -1,6 +1,6 @@
 package com.kollybistes.core.api;
 
-import com.kollybistes.common.dtos.APIResponse;
+import com.kollybistes.core.util.ErrorResponse;
 import com.kollybistes.common.dtos.TransactionDto;
 import com.kollybistes.core.services.EthereumService;
 import lombok.AllArgsConstructor;
@@ -18,7 +18,7 @@ public class EthereumController {
         try {
             return ethereumService.createWallet();
         } catch (Exception e) {
-            return APIResponse
+            return ErrorResponse
                     .builder()
                     .error(e.getMessage())
                     .build();
@@ -32,7 +32,7 @@ public class EthereumController {
                     , transactionDto.getAmount());
         }
         catch(Exception e){
-            return APIResponse
+            return ErrorResponse
                     .builder()
                     .error(e.getMessage())
                     .build();
@@ -44,7 +44,7 @@ public class EthereumController {
         try{
             return ethereumService.confirmTransactionToOutsideWallet(transactionDto);
         }catch(Exception e){
-            return APIResponse
+            return ErrorResponse
                     .builder()
                     .error(e.getMessage())
                     .build();

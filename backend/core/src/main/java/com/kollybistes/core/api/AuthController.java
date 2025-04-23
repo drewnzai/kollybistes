@@ -1,7 +1,7 @@
 package com.kollybistes.core.api;
 
 
-import com.kollybistes.common.dtos.APIResponse;
+import com.kollybistes.core.util.ErrorResponse;
 import com.kollybistes.common.dtos.LoginRequest;
 import com.kollybistes.common.dtos.RefreshTokenRequest;
 import com.kollybistes.common.dtos.RegisterRequest;
@@ -28,7 +28,7 @@ public class AuthController {
             return null;
         }
         catch(Exception e){
-            return APIResponse.builder().error(e.getMessage()).build();
+            return ErrorResponse.builder().error(e.getMessage()).build();
         }
 
     }
@@ -53,13 +53,13 @@ public class AuthController {
             return authService.login(loginRequest);
         }
         catch(BadCredentialsException e){
-            return APIResponse.builder().error("Wrong password").build();
+            return ErrorResponse.builder().error("Wrong password").build();
         }
         catch(UsernameNotFoundException | NullPointerException e){
-            return APIResponse.builder().error("Username does not exist").build();
+            return ErrorResponse.builder().error("Username does not exist").build();
         }
         catch(Exception e){
-            return APIResponse.builder().error("Verify account").build();
+            return ErrorResponse.builder().error("Verify account").build();
         }
 
     }
@@ -71,7 +71,7 @@ public class AuthController {
             return authService.refresh(refreshTokenRequest);
         }
         catch(Exception e){
-            return APIResponse.builder().error(e.getMessage()).build();
+            return ErrorResponse.builder().error(e.getMessage()).build();
         }
 
     }

@@ -1,6 +1,6 @@
 package com.kollybistes.core.api;
 
-import com.kollybistes.common.dtos.APIResponse;
+import com.kollybistes.core.util.ErrorResponse;
 import com.kollybistes.common.dtos.ExchangeDto;
 import com.kollybistes.core.services.ExchangeService;
 import lombok.AllArgsConstructor;
@@ -22,7 +22,7 @@ public class ExchangeController {
             return exchangeService.calculateExchangeDetails(exchangeDto);
         }
         catch(Exception e){
-            return APIResponse
+            return ErrorResponse
                     .builder()
                     .error(e.getMessage())
                     .build();
@@ -35,7 +35,7 @@ public class ExchangeController {
             return exchangeService.confirmExchange(exchangeDto);
         }
         catch(Exception e){
-            return APIResponse
+            return ErrorResponse
                     .builder()
                     .error(e.getMessage())
                     .build();

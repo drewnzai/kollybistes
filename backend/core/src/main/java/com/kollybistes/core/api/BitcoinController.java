@@ -1,6 +1,6 @@
 package com.kollybistes.core.api;
 
-import com.kollybistes.common.dtos.APIResponse;
+import com.kollybistes.core.util.ErrorResponse;
 import com.kollybistes.common.dtos.TransactionDto;
 import com.kollybistes.core.services.BitcoinService;
 import lombok.AllArgsConstructor;
@@ -18,7 +18,7 @@ public class BitcoinController {
         try {
             return bitcoinService.createWallet();
         } catch (Exception e) {
-            return APIResponse
+            return ErrorResponse
                     .builder()
                     .error(e.getMessage())
                     .build();
@@ -30,7 +30,7 @@ public class BitcoinController {
         try {
             return bitcoinService.getWalletBalance();
         } catch (Exception e) {
-            return APIResponse
+            return ErrorResponse
                     .builder()
                     .error(e.getMessage())
                     .build();
@@ -43,7 +43,7 @@ public class BitcoinController {
             return bitcoinService.calculateTransactionDetails(transactionDto.getRecipientAddress(),
                     transactionDto.getAmount());
         }catch(Exception e){
-            return APIResponse
+            return ErrorResponse
                     .builder()
                     .error(e.getMessage())
                     .build();
@@ -55,7 +55,7 @@ public class BitcoinController {
         try{
             return bitcoinService.confirmTransactionToOutsideWallet(transactionDto);
         }catch(Exception e){
-            return APIResponse
+            return ErrorResponse
                     .builder()
                     .error(e.getMessage())
                     .build();
