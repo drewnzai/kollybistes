@@ -4,6 +4,7 @@ import org.web3j.utils.Convert;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 
 public class Converter {
 
@@ -24,7 +25,7 @@ public class Converter {
     }
 
     public static BigDecimal convertSatsToBtc(BigInteger sats) {
-        return new BigDecimal(sats).divide(BigDecimal.valueOf(100_000_000L));
+        return new BigDecimal(sats).divide(BigDecimal.valueOf(100_000_000L), new MathContext(19));
     }
 
 }
