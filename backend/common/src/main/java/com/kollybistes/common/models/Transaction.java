@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
@@ -22,7 +22,7 @@ public class Transaction {
     private Long id;
     private String senderWalletAddress;
     private String recipientWalletAddress;
-    private BigInteger amount;
+    private BigDecimal amount;
     private String transactionHash;
     @CreationTimestamp
     @Column(name = "created_at")

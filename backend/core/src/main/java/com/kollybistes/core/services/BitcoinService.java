@@ -173,7 +173,8 @@ public class BitcoinService {
 
         BigInteger satvBFeeRate = transactionDto.getFeesDto().getMeasure();
 
-        BigInteger systemFeeSats = Converter.convertBtcToSats(transactionDto.getFeesDto().getSystemFee());
+        BigDecimal systemFeeBtc = transactionDto.getFeesDto().getSystemFee();
+        BigInteger systemFeeSats = Converter.convertBtcToSats(systemFeeBtc);
 
         String toSystemHash = bitcoinRPC.sendBitcoin(
                 user.getUsername(),
@@ -185,11 +186,12 @@ public class BitcoinService {
         transactionService.saveTransaction(
                 bitcoinWallet.getAddress(),
                 systemAddress,
-                systemFeeSats,
+                systemFeeBtc,
                 toSystemHash
         );
 
-        BigInteger transactionAmountSats = Converter.convertBtcToSats(transactionDto.getAmount());
+        BigDecimal transactionAmountBtc = transactionDto.getAmount();
+        BigInteger transactionAmountSats = Converter.convertBtcToSats(transactionAmountBtc);
 
         String toRecipientHash = bitcoinRPC.sendBitcoin(
                 user.getUsername(),
@@ -201,7 +203,7 @@ public class BitcoinService {
         transactionService.saveTransaction(
                 bitcoinWallet.getAddress(),
                 transactionDto.getRecipientAddress(),
-                transactionAmountSats,
+                transactionAmountBtc,
                 toRecipientHash
         );
 

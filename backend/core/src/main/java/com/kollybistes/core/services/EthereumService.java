@@ -178,7 +178,8 @@ public class EthereumService {
         Credentials credentials = Credentials.create(ethereumWallet.getPrivateKey());
         RawTransactionManager txManager = new RawTransactionManager(web3j, credentials, Long.parseLong(chainId));
 
-        BigInteger systemFeeWei = Converter.convertEthToWei(transactionDto.getFeesDto().getSystemFee());
+        BigDecimal systemFeeEth = transactionDto.getFeesDto().getSystemFee();
+        BigInteger systemFeeWei = Converter.convertEthToWei(systemFeeEth);
 
         RawTransaction toSystem = RawTransaction.createEtherTransaction(
                 nonce, gasPriceWei, BigInteger.valueOf(21000L),
@@ -189,13 +190,14 @@ public class EthereumService {
         transactionService.saveTransaction(
                 ethereumWallet.getAddress(),
                 systemAddress,
-                systemFeeWei,
+                systemFeeEth,
                 toSystemHash
         );
 
         nonce = nonce.add(BigInteger.ONE);
 
-        BigInteger transactionAmountWei = Converter.convertEthToWei(transactionDto.getAmount());
+        BigDecimal transactionAmountEth = transactionDto.getAmount();
+        BigInteger transactionAmountWei = Converter.convertEthToWei(transactionAmountEth);
 
         RawTransaction toRecipient = RawTransaction.createEtherTransaction(
                 nonce, gasPriceWei, BigInteger.valueOf(21000L),
@@ -206,7 +208,7 @@ public class EthereumService {
         transactionService.saveTransaction(
                 ethereumWallet.getAddress(),
                 transactionDto.getRecipientAddress(),
-                transactionAmountWei,
+                transactionAmountEth,
                 toRecipientHash
         );
 
