@@ -110,13 +110,16 @@ public class BitcoinService {
                 (bitcoinRPC.estimateP2WPKHTransactionSize(1, 2));
         BigInteger networkFeeSat = feeRate.multiply(estimatedSize);
 
-        BigInteger totalCost = amountSat.add(transactionFeeSat).add(networkFeeSat);
+        BigInteger totalCostSats = amountSat.add(transactionFeeSat).add(networkFeeSat);
 
-        if (totalCost.compareTo(updatedBalanceSats) > 0) {
+        if (totalCostSats.compareTo(updatedBalanceSats) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
                     + updatedBalanceBtc.toString()
                     + " BTC");
         }
+
+        BigDecimal totalCostBtc = Converter.convertSatsToBtc(totalCostSats);
+        BigDecimal expectedBalanceBtc = updatedBalanceBtc.subtract(totalCostBtc);
 
         return TransactionDto.builder()
                 .amount(Converter.convertSatsToBtc(amountSat))
@@ -126,7 +129,7 @@ public class BitcoinService {
                         Converter.convertSatsToBtc(networkFeeSat),
                         feeRate
                 ))
-                .expectedBalance(Converter.convertSatsToBtc(bitcoinWallet.getBalance().subtract(totalCost)))
+                .expectedBalance(expectedBalanceBtc)
                 .build();
     }
 
@@ -147,7 +150,7 @@ public class BitcoinService {
         if(bitcoinWallet.isTradingLocked()){
             throw new WalletLockedException("Wallet is currently in a transaction, try again later");
         }
-        
+
         BigDecimal updatedBalanceBtc = bitcoinRPC.updateBalance(bitcoinWallet);
         bitcoinWallet.setTradingLocked(true);
         bitcoinWallet.setBalance(updatedBalanceBtc);
