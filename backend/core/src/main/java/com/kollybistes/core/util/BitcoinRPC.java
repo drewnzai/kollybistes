@@ -166,12 +166,4 @@ public class BitcoinRPC {
 
         return String.valueOf(totalSize); // size in vbytes
     }
-
-    public BigInteger convertBtcToSats(BigDecimal btc) {
-        return btc.multiply(BigDecimal.valueOf(100_000_000L)).toBigInteger();
-    }
-
-    public BigDecimal convertSatsToBtc(BigInteger sats) {
-        return new BigDecimal(sats).divide(BigDecimal.valueOf(100_000_000L));
-    }
 }

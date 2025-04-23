@@ -5,12 +5,13 @@ import com.kollybistes.common.dtos.FeesDto;
 import com.kollybistes.common.dtos.TransactionDto;
 import com.kollybistes.common.dtos.WalletDto;
 import com.kollybistes.common.models.BitcoinWallet;
-import com.kollybistes.common.util.NotificationEmail;
 import com.kollybistes.common.models.User;
+import com.kollybistes.common.util.NotificationEmail;
 import com.kollybistes.core.exceptions.*;
 import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
 import com.kollybistes.core.util.BitcoinRPC;
+import com.kollybistes.core.util.Converter;
 import com.kollybistes.core.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,7 +79,7 @@ public class BitcoinService {
 
         return WalletDto.builder()
                 .address(bitcoinWallet.getAddress())
-                .balance(bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()))
+                .balance(Converter.convertSatsToBtc(bitcoinWallet.getBalance()))
                 .build();
     }
 
@@ -98,9 +99,9 @@ public class BitcoinService {
 
         bitcoinWallet.setBalance(bitcoinRPC.updateBalance(bitcoinWallet));
 
-        BigInteger amountSat = bitcoinRPC.convertBtcToSats(amount);
+        BigInteger amountSat = Converter.convertBtcToSats(amount);
         BigDecimal transactionFeeBtc = amount.multiply(TRANSACTION_FEE_PERCENT);
-        BigInteger transactionFeeSat = bitcoinRPC.convertBtcToSats(transactionFeeBtc);
+        BigInteger transactionFeeSat = Converter.convertBtcToSats(transactionFeeBtc);
 
         BigInteger feeRate = apiHandler.getRecommendedBitcoinFee(); // in sat/vB
         BigInteger estimatedSize = new BigInteger
@@ -111,19 +112,19 @@ public class BitcoinService {
 
         if (totalCost.compareTo(bitcoinWallet.getBalance()) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
-                    + bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
+                    + Converter.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
                     + " BTC");
         }
 
         return TransactionDto.builder()
-                .amount(bitcoinRPC.convertSatsToBtc(amountSat))
+                .amount(Converter.convertSatsToBtc(amountSat))
                 .recipientAddress(recipientAddress)
                 .feesDto(new FeesDto(
                         transactionFeeBtc,
-                        bitcoinRPC.convertSatsToBtc(networkFeeSat),
+                        Converter.convertSatsToBtc(networkFeeSat),
                         feeRate
                 ))
-                .expectedBalance(bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance().subtract(totalCost)))
+                .expectedBalance(Converter.convertSatsToBtc(bitcoinWallet.getBalance().subtract(totalCost)))
                 .build();
     }
 
@@ -152,17 +153,17 @@ public class BitcoinService {
         BigDecimal totalFeesBtc = transactionDto
                 .getFeesDto().getSystemFee().add(transactionDto.getFeesDto().getTransactionFee());
         BigDecimal totalBtc = transactionDto.getAmount().add(totalFeesBtc);
-        BigInteger totalSats = bitcoinRPC.convertBtcToSats(totalBtc);
+        BigInteger totalSats = Converter.convertBtcToSats(totalBtc);
 
         if(totalSats.compareTo(bitcoinWallet.getBalance()) > 0){
             throw new InsufficientBalanceException("Insufficient balance. You have "
-                    + bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
+                    + Converter.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
                     + " BTC");
         }
 
         BigInteger satvBFeeRate = transactionDto.getFeesDto().getMeasure();
 
-        BigInteger systemFeeSats = bitcoinRPC.convertBtcToSats(transactionDto.getFeesDto().getSystemFee());
+        BigInteger systemFeeSats = Converter.convertBtcToSats(transactionDto.getFeesDto().getSystemFee());
 
         String toSystemHash = bitcoinRPC.sendBitcoin(
                 user.getUsername(),
@@ -178,7 +179,7 @@ public class BitcoinService {
                 toSystemHash
         );
 
-        BigInteger transactionAmountSats = bitcoinRPC.convertBtcToSats(transactionDto.getAmount());
+        BigInteger transactionAmountSats = Converter.convertBtcToSats(transactionDto.getAmount());
 
         String toRecipientHash = bitcoinRPC.sendBitcoin(
                 user.getUsername(),

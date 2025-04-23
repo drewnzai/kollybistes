@@ -8,6 +8,7 @@ import com.kollybistes.core.repositories.BitcoinWalletRepository;
 import com.kollybistes.core.repositories.EthereumRepository;
 import com.kollybistes.core.repositories.ExchangeRepository;
 import com.kollybistes.core.util.BitcoinRPC;
+import com.kollybistes.core.util.Converter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -102,8 +103,8 @@ public class ExchangeService {
 
         BigDecimal amountBtc = exchangeDto.getAmountToExchange();
         BigDecimal systemTransactionFeeBtc = amountBtc.multiply(TRANSACTION_FEE_PERCENT);
-        BigInteger amountSat = bitcoinRPC.convertBtcToSats(amountBtc);
-        BigInteger systemTransactionFeeSat = bitcoinRPC.convertBtcToSats(systemTransactionFeeBtc);
+        BigInteger amountSat = Converter.convertBtcToSats(amountBtc);
+        BigInteger systemTransactionFeeSat = Converter.convertBtcToSats(systemTransactionFeeBtc);
 
         BigInteger feeRate = apiHandler.getRecommendedBitcoinFee(); // in sat/vB
         BigInteger estimatedSize = new BigInteger
@@ -119,7 +120,7 @@ public class ExchangeService {
 
         if (totalCost.compareTo(bitcoinWallet.getBalance()) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
-                    + bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
+                    + Converter.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
             + " BTC");
         }
 
@@ -132,7 +133,7 @@ public class ExchangeService {
                 .feesDto(
                         new FeesDto(
                                 systemTransactionFeeBtc,
-                                bitcoinRPC.convertSatsToBtc(networkFeeSat),
+                                Converter.convertSatsToBtc(networkFeeSat),
                                 feeRate
                         )
                 )
@@ -161,11 +162,11 @@ public class ExchangeService {
         ethereumRepository.save(ethereumWallet);
 
         BigDecimal amountInEth = exchangeDto.getAmountToExchange();
-        BigInteger amountInWei = convertEthToWei(amountInEth);
+        BigInteger amountInWei = Converter.convertEthToWei(amountInEth);
 
         // Calculate 15% system fee (in wei)
         BigDecimal systemFeeEth = amountInEth.multiply(TRANSACTION_FEE_PERCENT);
-        BigInteger systemFeeWei = convertEthToWei(systemFeeEth);
+        BigInteger systemFeeWei = Converter.convertEthToWei(systemFeeEth);
 
         // Estimate gas fees
         BigInteger gasPriceWei = apiHandler.getRecommendedEthereumGasFee(); // in wei
@@ -181,7 +182,7 @@ public class ExchangeService {
 
         if (totalCost.compareTo(balanceWei) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
-            + convertWeiToEth(balanceWei).toString()
+            + Converter.convertWeiToEth(balanceWei).toString()
             + " ETH");
         }
 
@@ -191,10 +192,10 @@ public class ExchangeService {
                 .amountToExchange(amountInEth)
                 .exchangeType(ExchangeType.ETH_TO_BTC.name())
                 .expectedAmountGotten(expectedReturnBtc)
-                .expectedBalance(convertWeiToEth(balanceWei.subtract(totalCost)))
+                .expectedBalance(Converter.convertWeiToEth(balanceWei.subtract(totalCost)))
                 .feesDto(
-                        new FeesDto(convertWeiToEth(systemFeeWei),
-                                convertWeiToEth(totalGasFees), gasPriceWei)
+                        new FeesDto(Converter.convertWeiToEth(systemFeeWei),
+                                Converter.convertWeiToEth(totalGasFees), gasPriceWei)
                 )
                 .rate(exchangeRateEthToBtc)
                 .build();
@@ -227,11 +228,11 @@ public class ExchangeService {
         BigDecimal totalFeesBtc = exchangeDto
                 .getFeesDto().getSystemFee().add(exchangeDto.getFeesDto().getTransactionFee());
         BigDecimal totalBtc = exchangeDto.getAmountToExchange().add(totalFeesBtc);
-        BigInteger totalSats = bitcoinRPC.convertBtcToSats(totalBtc);
+        BigInteger totalSats = Converter.convertBtcToSats(totalBtc);
 
         if(totalSats.compareTo(bitcoinWallet.getBalance()) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
-                    + bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
+                    + Converter.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
             + " BTC");
         }
 
@@ -239,7 +240,7 @@ public class ExchangeService {
         bitcoinWalletRepository.save(bitcoinWallet);
 
         BigInteger feeRate = exchangeDto.getFeesDto().getMeasure();
-        BigInteger systemFeeSats = bitcoinRPC.convertBtcToSats(exchangeDto.getFeesDto().getSystemFee());
+        BigInteger systemFeeSats = Converter.convertBtcToSats(exchangeDto.getFeesDto().getSystemFee());
 
         String toSystemHash = bitcoinRPC.sendBitcoin(
                 user.getUsername(),
@@ -318,11 +319,11 @@ public class ExchangeService {
         BigDecimal totalFeesEth = exchangeDto
                 .getFeesDto().getSystemFee().add(exchangeDto.getFeesDto().getTransactionFee());
         BigDecimal totalEth = exchangeDto.getAmountToExchange().add(totalFeesEth);
-        BigInteger totalWei = convertEthToWei(totalEth);
+        BigInteger totalWei = Converter.convertEthToWei(totalEth);
 
         if (totalWei.compareTo(balanceWei) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
-                    + convertWeiToEth(balanceWei).toString()
+                    + Converter.convertWeiToEth(balanceWei).toString()
             + " ETH");
         }
 
@@ -340,7 +341,7 @@ public class ExchangeService {
         BigInteger feeRate = apiHandler.getRecommendedBitcoinFee();
 
         BigDecimal amountGottenBtc = exchangeDto.getExpectedAmountGotten();
-        BigInteger amountGottenSats = bitcoinRPC.convertBtcToSats(amountGottenBtc);
+        BigInteger amountGottenSats = Converter.convertBtcToSats(amountGottenBtc);
 
         String recipientHash = bitcoinRPC.sendBitcoinFromSystem(
                 bitcoinWallet.getAddress(),
@@ -408,13 +409,5 @@ public class ExchangeService {
         EthGetBalance balance = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
         return balance.getBalance(); // in wei
     }
-
-    private BigDecimal convertWeiToEth(BigInteger wei) {
-        return new BigDecimal(wei).divide(BigDecimal.TEN.pow(18));
-    }
-
-    private BigInteger convertEthToWei(BigDecimal eth) {
-        return eth.multiply(BigDecimal.TEN.pow(18)).toBigInteger();
-    }
-
+    
 }

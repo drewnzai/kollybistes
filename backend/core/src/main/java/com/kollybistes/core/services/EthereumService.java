@@ -5,11 +5,12 @@ import com.kollybistes.common.dtos.FeesDto;
 import com.kollybistes.common.dtos.TransactionDto;
 import com.kollybistes.common.dtos.WalletDto;
 import com.kollybistes.common.models.EthereumWallet;
-import com.kollybistes.common.util.NotificationEmail;
 import com.kollybistes.common.models.User;
+import com.kollybistes.common.util.NotificationEmail;
 import com.kollybistes.core.exceptions.*;
 import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.EthereumRepository;
+import com.kollybistes.core.util.Converter;
 import com.kollybistes.core.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,7 +79,7 @@ public class EthereumService {
         ethereumRepository.save(ethereumWallet);
 
         return WalletDto.builder()
-                .balance(convertWeiToEth(ethereumWallet.getBalance())) // in wei
+                .balance(Converter.convertWeiToEth(ethereumWallet.getBalance())) // in wei
                 .address(ethereumWallet.getAddress())
                 .build();
     }
@@ -104,11 +105,11 @@ public class EthereumService {
         ethereumWallet.setBalance(balanceWei);
         ethereumRepository.save(ethereumWallet);
 
-        BigInteger amountInWei = convertEthToWei(amountInEth);
+        BigInteger amountInWei = Converter.convertEthToWei(amountInEth);
 
         // Calculate 15% system fee (in wei)
         BigDecimal systemFeeEth = amountInEth.multiply(TRANSACTION_FEE_PERCENT);
-        BigInteger systemFeeWei = convertEthToWei(systemFeeEth);
+        BigInteger systemFeeWei = Converter.convertEthToWei(systemFeeEth);
 
         // Estimate gas fees
         BigInteger gasPriceWei = apiHandler.getRecommendedEthereumGasFee(); // in wei
@@ -119,16 +120,16 @@ public class EthereumService {
 
         if (totalCost.compareTo(balanceWei) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
-                    + convertWeiToEth(balanceWei).toString()
+                    + Converter.convertWeiToEth(balanceWei).toString()
                     + " ETH");
         }
 
         return TransactionDto.builder()
-                .amount(convertWeiToEth(amountInWei))
+                .amount(Converter.convertWeiToEth(amountInWei))
                 .recipientAddress(recipientAddress)
-                .feesDto(new FeesDto(convertWeiToEth(systemFeeWei),
-                        convertWeiToEth(totalGasFees), gasPriceWei))
-                .expectedBalance(convertWeiToEth(balanceWei.subtract(totalCost)))
+                .feesDto(new FeesDto(Converter.convertWeiToEth(systemFeeWei),
+                        Converter.convertWeiToEth(totalGasFees), gasPriceWei))
+                .expectedBalance(Converter.convertWeiToEth(balanceWei.subtract(totalCost)))
                 .build();
     }
 
@@ -159,11 +160,11 @@ public class EthereumService {
         BigDecimal totalFeesEth = transactionDto
                 .getFeesDto().getSystemFee().add(transactionDto.getFeesDto().getTransactionFee());
         BigDecimal totalEth = transactionDto.getAmount().add(totalFeesEth);
-        BigInteger totalWei = convertEthToWei(totalEth);
+        BigInteger totalWei = Converter.convertEthToWei(totalEth);
 
         if (totalWei.compareTo(balanceWei) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
-                    + convertWeiToEth(balanceWei).toString()
+                    + Converter.convertWeiToEth(balanceWei).toString()
                     + " ETH");
         }
 
@@ -174,7 +175,7 @@ public class EthereumService {
         Credentials credentials = Credentials.create(ethereumWallet.getPrivateKey());
         RawTransactionManager txManager = new RawTransactionManager(web3j, credentials, Long.parseLong(chainId));
 
-        BigInteger systemFeeWei = convertEthToWei(transactionDto.getFeesDto().getSystemFee());
+        BigInteger systemFeeWei = Converter.convertEthToWei(transactionDto.getFeesDto().getSystemFee());
 
         RawTransaction toSystem = RawTransaction.createEtherTransaction(
                 nonce, gasPriceWei, BigInteger.valueOf(21000L),
@@ -191,7 +192,7 @@ public class EthereumService {
 
         nonce = nonce.add(BigInteger.ONE);
 
-        BigInteger transactionAmountWei = convertEthToWei(transactionDto.getAmount());
+        BigInteger transactionAmountWei = Converter.convertEthToWei(transactionDto.getAmount());
 
         RawTransaction toRecipient = RawTransaction.createEtherTransaction(
                 nonce, gasPriceWei, BigInteger.valueOf(21000L),
@@ -221,13 +222,5 @@ public class EthereumService {
         EthGetBalance balance = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
         return balance.getBalance(); // in wei
     }
-
-    private BigDecimal convertWeiToEth(BigInteger wei) {
-        return new BigDecimal(wei).divide(BigDecimal.TEN.pow(18));
-    }
-
-    private BigInteger convertEthToWei(BigDecimal eth) {
-        return eth.multiply(BigDecimal.TEN.pow(18)).toBigInteger();
-    }
-
+    
 }
