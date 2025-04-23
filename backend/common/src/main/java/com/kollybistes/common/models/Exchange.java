@@ -31,16 +31,22 @@ public class Exchange {
     @ManyToOne
     private EthereumWallet ethereumWallet; // ETH wallet used in the trade
 
+    @Column(precision = 36, scale = 18)
     private BigDecimal amountGiven; // Amount of crypto traded
 
+    @Column(precision = 36, scale = 18)
     private BigDecimal amountGotten; // Amount of crypto received
 
+    @Column(precision = 19, scale = 9)
     private BigDecimal exchangeRate; // BTC/ETH exchange rate at the time of trade
 
+    @Column(precision = 36, scale = 18)
     private BigDecimal systemFee; // 15% of the trade amount
 
-    private BigDecimal transactionFee; // Gas fee for faster transaction completion
+    @Column(precision = 36, scale = 18)
+    private BigDecimal transactionFee; // Gas fee or BTC transaction fee for faster transaction completion
 
+    @Column(precision = 36, scale = 18)
     private BigDecimal totalCost; // Total cost including fees
 
     @Enumerated(EnumType.STRING)
