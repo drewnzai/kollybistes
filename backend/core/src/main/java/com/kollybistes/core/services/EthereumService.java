@@ -127,7 +127,7 @@ public class EthereumService {
         }
 
         return TransactionDto.builder()
-                .amount(Converter.convertWeiToEth(amountInWei))
+                .amount(amountInEth)
                 .recipientAddress(recipientAddress)
                 .feesDto(new FeesDto(Converter.convertWeiToEth(systemFeeWei),
                         Converter.convertWeiToEth(totalGasFees), gasPriceWei))

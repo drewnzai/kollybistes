@@ -83,7 +83,7 @@ public class BitcoinService {
                 .build();
     }
 
-    public TransactionDto calculateTransactionDetails(String recipientAddress, BigDecimal amount)
+    public TransactionDto calculateTransactionDetails(String recipientAddress, BigDecimal amountBtc)
             throws Exception {
 
         if(!ValidationUtil.isValidBitcoinAddress(recipientAddress)){
@@ -101,8 +101,8 @@ public class BitcoinService {
         bitcoinWallet.setBalance(updatedBalanceBtc);
         BigInteger updatedBalanceSats = Converter.convertBtcToSats(bitcoinWallet.getBalance());
 
-        BigInteger amountSat = Converter.convertBtcToSats(amount);
-        BigDecimal transactionFeeBtc = amount.multiply(TRANSACTION_FEE_PERCENT);
+        BigInteger amountSat = Converter.convertBtcToSats(amountBtc);
+        BigDecimal transactionFeeBtc = amountBtc.multiply(TRANSACTION_FEE_PERCENT);
         BigInteger transactionFeeSat = Converter.convertBtcToSats(transactionFeeBtc);
 
         BigInteger feeRate = apiHandler.getRecommendedBitcoinFee(); // in sat/vB
@@ -122,7 +122,7 @@ public class BitcoinService {
         BigDecimal expectedBalanceBtc = updatedBalanceBtc.subtract(totalCostBtc);
 
         return TransactionDto.builder()
-                .amount(Converter.convertSatsToBtc(amountSat))
+                .amount(amountBtc)
                 .recipientAddress(recipientAddress)
                 .feesDto(new FeesDto(
                         transactionFeeBtc,
@@ -153,7 +153,7 @@ public class BitcoinService {
 
         BigDecimal updatedBalanceBtc = bitcoinRPC.updateBalance(bitcoinWallet);
         BigInteger updatedBalanceSats = Converter.convertBtcToSats(bitcoinWallet.getBalance());
-        
+
         bitcoinWallet.setTradingLocked(true);
         bitcoinWallet.setBalance(updatedBalanceBtc);
 
