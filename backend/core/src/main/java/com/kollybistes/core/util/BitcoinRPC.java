@@ -105,9 +105,7 @@ public class BitcoinRPC {
         JSONObject jsonResponse = new JSONObject(response);
         JSONObject mine = jsonResponse.getJSONObject("result").getJSONObject("mine");
 
-        BigDecimal balanceBTC = new BigDecimal(mine.get("trusted").toString());
-
-        return balanceBTC;
+        return new BigDecimal(mine.get("trusted").toString());
     }
 
     public String sendBitcoinFromSystem(String toAddress, BigInteger amountSat, BigInteger feeRate) {
