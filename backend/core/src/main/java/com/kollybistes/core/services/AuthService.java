@@ -10,6 +10,10 @@ import com.kollybistes.common.models.User;
 import com.kollybistes.common.models.VerificationToken;
 import com.kollybistes.core.auth.JwtUtil;
 import com.kollybistes.core.auth.UserDetailsImpl;
+import com.kollybistes.core.exceptions.ExpiredTokenException;
+import com.kollybistes.core.exceptions.IllegalFormatException;
+import com.kollybistes.core.exceptions.ResourceAlreadyExistsException;
+import com.kollybistes.core.exceptions.EntityNotFoundException;
 import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.RefreshTokenRepository;
 import com.kollybistes.core.repositories.UserRepository;
@@ -39,12 +43,12 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
-    public void signup(RegisterRequest registerRequest) throws Exception {
+    public void signup(RegisterRequest registerRequest)  {
         if(userRepository.existsByUsername(registerRequest.getUsername())){
-            throw new Exception("Username already exists");
+            throw new ResourceAlreadyExistsException("Username already exists");
         }
         else if(userRepository.existsByEmail(registerRequest.getEmail())){
-            throw new Exception("Email is already in use");
+            throw new ResourceAlreadyExistsException("Email is already in use");
         }
         else{
             User user = new User();
@@ -70,12 +74,10 @@ public class AuthService {
         }
     }
 
-    private void fetchUserAndEnable(VerificationToken verificationToken) throws Exception {
+    private void fetchUserAndEnable(VerificationToken verificationToken)  {
         String username = verificationToken.getUser().getUsername();
         User user = userRepository.findByUsername(username).orElseThrow(
-                () -> {
-                    return new Exception("Could not find user");
-                }
+                () -> new EntityNotFoundException("Could not find user")
         );
         user.setEnabled(true);
         userRepository.save(user);
@@ -91,8 +93,11 @@ public class AuthService {
         return token;
     }
 
-    public void verifyAccount(String token) throws Exception {
-        VerificationToken verificationToken = verificationTokenRepository.findByToken(token);
+    public void verifyAccount(String token) {
+        VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Could not find verification token")
+                );
         fetchUserAndEnable(verificationToken);
     }
 
@@ -101,7 +106,10 @@ public class AuthService {
         UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.
                 getContext().getAuthentication().getPrincipal();
 
-        return userRepository.findByUsername(principal.getUsername()).get();
+        return userRepository.findByUsername(principal.getUsername())
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Could not find user")
+                );
     }
 
     public LoginResponse login(LoginRequest loginRequest) throws Exception {
@@ -112,9 +120,7 @@ public class AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(
-                () -> {
-                    return new Exception("Could not find user");
-                }
+                () -> new Exception("Could not find user")
         );
 
         RefreshToken refreshToken = new RefreshToken();
@@ -131,11 +137,13 @@ public class AuthService {
     public LoginResponse refresh(RefreshTokenRequest refreshTokenRequest) throws Exception {
 
         User user = userRepository.findByUsername(refreshTokenRequest.getUsername()).orElseThrow(
-                () -> {
-                    return new Exception("Could not find user");
-                }
+                () -> new EntityNotFoundException("Could not find user")
         );
-        RefreshToken refreshToken = refreshTokenRepository.findByTokenAndUser(refreshTokenRequest.getRefreshToken(), user);
+        RefreshToken refreshToken = refreshTokenRepository.
+                findByTokenAndUser(refreshTokenRequest.getRefreshToken(), user)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Could not find refresh token")
+                );
 
         boolean isNotExpired = Instant.now().isBefore(refreshToken.getExpirationDate());
 
@@ -147,10 +155,10 @@ public class AuthService {
         else if(!isNotExpired){
             refreshTokenRepository.deleteByToken(refreshTokenRequest.getRefreshToken());
 
-            throw new Exception("Refresh Token has expired");
+            throw new ExpiredTokenException("Refresh Token has expired");
         }
         else {
-            throw new Exception("Refresh Token is not valid");
+            throw new IllegalFormatException("Refresh Token is not valid");
         }
     }
 
@@ -167,6 +175,5 @@ public class AuthService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return !(authentication instanceof AnonymousAuthenticationToken) && authentication.isAuthenticated();
     }
-
 
 }

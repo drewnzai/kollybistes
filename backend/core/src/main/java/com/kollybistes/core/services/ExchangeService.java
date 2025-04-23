@@ -3,6 +3,7 @@ package com.kollybistes.core.services;
 import com.kollybistes.common.dtos.ExchangeDto;
 import com.kollybistes.common.dtos.FeesDto;
 import com.kollybistes.common.models.*;
+import com.kollybistes.core.exceptions.*;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
 import com.kollybistes.core.repositories.EthereumRepository;
 import com.kollybistes.core.repositories.ExchangeRepository;
@@ -68,7 +69,7 @@ public class ExchangeService {
             return calculateEthToBtc(exchangeDto);
         }
         else{
-            throw new Exception("Not a valid exchange, check the exchange type");
+            throw new IllegalFormatException("Not a valid exchange, check the exchange type");
         }
     }
 
@@ -80,20 +81,22 @@ public class ExchangeService {
             return confirmEthToBtc(exchangeDto);
         }
         else{
-            throw new Exception("Not a valid exchange, check the exchange type");
+            throw new IllegalFormatException("Not a valid exchange, check the exchange type");
         }
     }
 
     private ExchangeDto calculateBtcToEth(ExchangeDto exchangeDto) throws Exception {
 
         if (exchangeDto.getAmountToExchange().compareTo(MIN_BTC_AMOUNT) < 0) {
-            throw new Exception("Exchange amount is too low. Minimum is " + MIN_BTC_AMOUNT + " BTC.");
+            throw new InsufficientBalanceException("Exchange amount is too low. Minimum is " + MIN_BTC_AMOUNT + " BTC.");
         }
 
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
-                .orElseThrow(() -> new Exception("User does not have a Bitcoin wallet"));
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User does not have a Bitcoin wallet")
+                );
 
         bitcoinWallet.setBalance(bitcoinRPC.updateBalance(bitcoinWallet));
 
@@ -115,8 +118,9 @@ public class ExchangeService {
                 .convertSatsToBtc(bitcoinWallet.getBalance().subtract(totalCost));
 
         if (totalCost.compareTo(bitcoinWallet.getBalance()) > 0) {
-            throw new Exception("Insufficient balance. You have "
-                    + bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()).toString());
+            throw new InsufficientBalanceException("Insufficient balance. You have "
+                    + bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
+            + " BTC");
         }
 
         bitcoinWalletRepository.save(bitcoinWallet);
@@ -140,13 +144,16 @@ public class ExchangeService {
     private ExchangeDto calculateEthToBtc(ExchangeDto exchangeDto) throws Exception{
 
         if (exchangeDto.getAmountToExchange().compareTo(MIN_ETH_AMOUNT) < 0) {
-            throw new Exception("Exchange amount is too low. Minimum is " + MIN_ETH_AMOUNT + " ETH.");
+            throw new InsufficientBalanceException
+                    ("Exchange amount is too low. Minimum is " + MIN_ETH_AMOUNT + " ETH.");
         }
 
         User user = authService.getCurrentUser();
 
         EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
-                .orElseThrow(() -> new Exception("User does not have an Ethereum wallet"));
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User does not have an Ethereum wallet")
+                );
 
         BigInteger balanceWei = getBalance(ethereumWallet.getAddress());
 
@@ -173,8 +180,9 @@ public class ExchangeService {
         BigInteger totalCost = amountInWei.add(systemFeeWei).add(totalGasFees);
 
         if (totalCost.compareTo(balanceWei) > 0) {
-            throw new Exception("Insufficient balance. You have "
-            + convertWeiToEth(balanceWei).toString());
+            throw new InsufficientBalanceException("Insufficient balance. You have "
+            + convertWeiToEth(balanceWei).toString()
+            + " ETH");
         }
 
         ethereumRepository.save(ethereumWallet);
@@ -195,20 +203,24 @@ public class ExchangeService {
     private Object confirmBtcToEth(ExchangeDto exchangeDto) throws Exception {
 
         if (exchangeDto.getAmountToExchange().compareTo(MIN_BTC_AMOUNT) < 0) {
-            throw new Exception("Exchange amount is too low. Minimum is " + MIN_BTC_AMOUNT + " BTC.");
+            throw new InsufficientBalanceException("Exchange amount is too low. Minimum is " + MIN_BTC_AMOUNT + " BTC.");
         }
 
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
-                .orElseThrow(() -> new Exception("User does not have a Bitcoin wallet"));
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User does not have a Bitcoin wallet")
+                );
 
         if(bitcoinWallet.isTradingLocked()){
-            throw new Exception("Wallet is currently in a transaction, try again later");
+            throw new WalletLockedException("Wallet is currently in a transaction, try again later");
         }
 
         EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
-                .orElseThrow(() -> new Exception("User does not have an Ethereum wallet"));
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User does not have an Ethereum wallet")
+                );
 
         bitcoinWallet.setBalance(bitcoinRPC.updateBalance(bitcoinWallet));
 
@@ -218,8 +230,9 @@ public class ExchangeService {
         BigInteger totalSats = bitcoinRPC.convertBtcToSats(totalBtc);
 
         if(totalSats.compareTo(bitcoinWallet.getBalance()) > 0) {
-            throw new Exception("Insufficient balance. You have "
-                    + bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()).toString());
+            throw new InsufficientBalanceException("Insufficient balance. You have "
+                    + bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
+            + " BTC");
         }
 
         bitcoinWallet.setTradingLocked(true);
@@ -274,19 +287,24 @@ public class ExchangeService {
     private Object confirmEthToBtc(ExchangeDto exchangeDto) throws Exception {
 
         if (exchangeDto.getAmountToExchange().compareTo(MIN_ETH_AMOUNT) < 0) {
-            throw new Exception("Exchange amount is too low. Minimum is " + MIN_ETH_AMOUNT + " ETH.");
+            throw new InsufficientBalanceException
+                    ("Exchange amount is too low. Minimum is " + MIN_ETH_AMOUNT + " ETH.");
         }
 
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
-                .orElseThrow(() -> new Exception("User does not have a Bitcoin wallet"));
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User does not have a Bitcoin wallet")
+                );
 
         EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
-                .orElseThrow(() -> new Exception("User does not have an Ethereum wallet"));
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User does not have an Ethereum wallet")
+                );
 
         if (ethereumWallet.isTradingLocked()) {
-            throw new Exception("Wallet is currently in a transaction, try again later");
+            throw new WalletLockedException("Wallet is currently in a transaction, try again later");
         }
 
         BigInteger balanceWei = getBalance(ethereumWallet.getAddress());
@@ -303,8 +321,9 @@ public class ExchangeService {
         BigInteger totalWei = convertEthToWei(totalEth);
 
         if (totalWei.compareTo(balanceWei) > 0) {
-            throw new Exception("Insufficient balance. You have "
-                    + convertWeiToEth(balanceWei).toString());
+            throw new InsufficientBalanceException("Insufficient balance. You have "
+                    + convertWeiToEth(balanceWei).toString()
+            + " ETH");
         }
 
         Credentials credentials = Credentials.create(ethereumWallet.getPrivateKey());
@@ -375,7 +394,7 @@ public class ExchangeService {
         EthSendTransaction response = txManager.signAndSend(transaction);
 
         if (response.hasError()) {
-            throw new Exception("Transaction Error: " + response.getError().getMessage());
+            throw new TransactionException("Transaction Error: " + response.getError().getMessage());
         }
 
         return response.getTransactionHash(); // TXID

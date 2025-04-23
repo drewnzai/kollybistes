@@ -7,6 +7,7 @@ import com.kollybistes.common.dtos.WalletDto;
 import com.kollybistes.common.models.EthereumWallet;
 import com.kollybistes.common.util.NotificationEmail;
 import com.kollybistes.common.models.User;
+import com.kollybistes.core.exceptions.*;
 import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.EthereumRepository;
 import com.kollybistes.core.util.ValidationUtil;
@@ -49,7 +50,7 @@ public class EthereumService {
         User user = authService.getCurrentUser();
 
         if (ethereumRepository.existsByUser(user)) {
-            throw new Exception("User already has an Ethereum account");
+            throw new ResourceAlreadyExistsException("User already has an Ethereum account");
         }
 
         ECKeyPair keyPair = Keys.createEcKeyPair();
@@ -86,14 +87,16 @@ public class EthereumService {
             throws Exception {
 
         if (!ValidationUtil.isValidEthereumAddress(recipientAddress)) {
-            throw new IllegalArgumentException("Invalid Ethereum address: " +
+            throw new IllegalFormatException("Invalid Ethereum address: " +
                     recipientAddress);
         }
 
         User user = authService.getCurrentUser();
 
         EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
-                .orElseThrow(() -> new Exception("User does not have an Ethereum wallet"));
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User does not have an Ethereum wallet")
+                );
 
 
         BigInteger balanceWei = getBalance(ethereumWallet.getAddress());
@@ -115,8 +118,9 @@ public class EthereumService {
         BigInteger totalCost = amountInWei.add(systemFeeWei).add(totalGasFees);
 
         if (totalCost.compareTo(balanceWei) > 0) {
-            throw new Exception("Insufficient balance. You have "
-                    + convertWeiToEth(balanceWei).toString());
+            throw new InsufficientBalanceException("Insufficient balance. You have "
+                    + convertWeiToEth(balanceWei).toString()
+                    + " ETH");
         }
 
         return TransactionDto.builder()
@@ -131,7 +135,7 @@ public class EthereumService {
     public Object confirmTransactionToOutsideWallet(TransactionDto transactionDto) throws Exception {
 
         if (!ValidationUtil.isValidEthereumAddress(transactionDto.getRecipientAddress())) {
-            throw new IllegalArgumentException("Invalid Ethereum address: " +
+            throw new IllegalFormatException("Invalid Ethereum address: " +
                     transactionDto.getRecipientAddress());
         }
 
@@ -141,7 +145,7 @@ public class EthereumService {
                 .orElseThrow(() -> new Exception("User does not have an Ethereum wallet"));
 
         if (ethereumWallet.isTradingLocked()) {
-            throw new Exception("Wallet is currently in a transaction, try again later");
+            throw new WalletLockedException("Wallet is currently in a transaction, try again later");
         }
 
         BigInteger balanceWei = getBalance(ethereumWallet.getAddress());
@@ -158,8 +162,9 @@ public class EthereumService {
         BigInteger totalWei = convertEthToWei(totalEth);
 
         if (totalWei.compareTo(balanceWei) > 0) {
-            throw new Exception("Insufficient balance. You have "
-                    + convertWeiToEth(balanceWei).toString());
+            throw new InsufficientBalanceException("Insufficient balance. You have "
+                    + convertWeiToEth(balanceWei).toString()
+                    + " ETH");
         }
 
         BigInteger nonce = web3j.ethGetTransactionCount(

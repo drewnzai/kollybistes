@@ -7,6 +7,7 @@ import com.kollybistes.common.dtos.WalletDto;
 import com.kollybistes.common.models.BitcoinWallet;
 import com.kollybistes.common.util.NotificationEmail;
 import com.kollybistes.common.models.User;
+import com.kollybistes.core.exceptions.*;
 import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
 import com.kollybistes.core.util.BitcoinRPC;
@@ -40,10 +41,11 @@ public class BitcoinService {
         User user = authService.getCurrentUser();
 
         if (bitcoinWalletRepository.existsByUser(user)) {
-            throw new Exception("User already has a wallet");
+            throw new ResourceAlreadyExistsException("User already has a wallet");
         }
 
         BitcoinWallet bitcoinWallet = bitcoinRPC.createWallet(user);
+
         notificationProducer.sendMail(
                 NotificationEmail.builder()
                         .recipient(user.getEmail())
@@ -67,7 +69,9 @@ public class BitcoinService {
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
-                .orElseThrow(() -> new Exception("User does not have a Bitcoin wallet"));
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User does not have a Bitcoin wallet")
+                );
 
         bitcoinWallet.setBalance(bitcoinRPC.getTrustedAddressBalance(user.getUsername()));
         bitcoinWalletRepository.save(bitcoinWallet);
@@ -82,13 +86,15 @@ public class BitcoinService {
             throws Exception {
 
         if(!ValidationUtil.isValidBitcoinAddress(recipientAddress)){
-            throw new IllegalArgumentException("Invalid Bitcoin address: " + recipientAddress);
+            throw new IllegalFormatException("Invalid Bitcoin address: " + recipientAddress);
         }
 
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
-                .orElseThrow(() -> new Exception("User does not have a Bitcoin wallet"));
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User does not have a Bitcoin wallet")
+                );
 
         bitcoinWallet.setBalance(bitcoinRPC.updateBalance(bitcoinWallet));
 
@@ -104,8 +110,9 @@ public class BitcoinService {
         BigInteger totalCost = amountSat.add(transactionFeeSat).add(networkFeeSat);
 
         if (totalCost.compareTo(bitcoinWallet.getBalance()) > 0) {
-            throw new Exception("Insufficient balance. You have "
-                    + bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()).toString());
+            throw new InsufficientBalanceException("Insufficient balance. You have "
+                    + bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
+                    + " BTC");
         }
 
         return TransactionDto.builder()
@@ -123,7 +130,7 @@ public class BitcoinService {
     public Object confirmTransactionToOutsideWallet(TransactionDto transactionDto) throws Exception {
 
         if(!ValidationUtil.isValidBitcoinAddress(transactionDto.getRecipientAddress())){
-            throw new IllegalArgumentException("Invalid Bitcoin address: " +
+            throw new IllegalFormatException("Invalid Bitcoin address: " +
                     transactionDto.getRecipientAddress());
         }
 
@@ -131,11 +138,11 @@ public class BitcoinService {
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
                 .orElseThrow(
-                        () -> new Exception("User does not have a Bitcoin wallet")
+                        () -> new EntityNotFoundException("User does not have a Bitcoin wallet")
                 );
 
         if(bitcoinWallet.isTradingLocked()){
-            throw new Exception("Wallet is currently in a transaction, try again later");
+            throw new WalletLockedException("Wallet is currently in a transaction, try again later");
         }
 
         bitcoinWallet.setTradingLocked(true);
@@ -148,8 +155,9 @@ public class BitcoinService {
         BigInteger totalSats = bitcoinRPC.convertBtcToSats(totalBtc);
 
         if(totalSats.compareTo(bitcoinWallet.getBalance()) > 0){
-            throw new Exception("Insufficient balance. You have "
-                    + bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()).toString());
+            throw new InsufficientBalanceException("Insufficient balance. You have "
+                    + bitcoinRPC.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
+                    + " BTC");
         }
 
         BigInteger satvBFeeRate = transactionDto.getFeesDto().getMeasure();
