@@ -59,7 +59,7 @@ public class EthereumService {
 
         EthereumWallet ethereumWallet = new EthereumWallet();
         ethereumWallet.setUser(user);
-        ethereumWallet.setBalance(BigInteger.ZERO); // in wei
+        ethereumWallet.setBalance(BigDecimal.ZERO); // in wei
         ethereumWallet.setPrivateKey(keyPair.getPrivateKey().toString(16));
         ethereumWallet.setPublicKey(keyPair.getPublicKey().toString(16));
         ethereumWallet.setAddress("0x" + walletFile.getAddress());
@@ -79,7 +79,7 @@ public class EthereumService {
         ethereumRepository.save(ethereumWallet);
 
         return WalletDto.builder()
-                .balance(Converter.convertWeiToEth(ethereumWallet.getBalance())) // in wei
+                .balance(ethereumWallet.getBalance()) // in wei
                 .address(ethereumWallet.getAddress())
                 .build();
     }
@@ -100,9 +100,11 @@ public class EthereumService {
                 );
 
 
-        BigInteger balanceWei = getBalance(ethereumWallet.getAddress());
+        BigInteger updatedBalanceWei = getBalance(ethereumWallet.getAddress());
 
-        ethereumWallet.setBalance(balanceWei);
+        BigDecimal updatedBalanceEth = Converter.convertWeiToEth(updatedBalanceWei);
+
+        ethereumWallet.setBalance(updatedBalanceEth);
         ethereumRepository.save(ethereumWallet);
 
         BigInteger amountInWei = Converter.convertEthToWei(amountInEth);
@@ -118,9 +120,9 @@ public class EthereumService {
 
         BigInteger totalCost = amountInWei.add(systemFeeWei).add(totalGasFees);
 
-        if (totalCost.compareTo(balanceWei) > 0) {
+        if (totalCost.compareTo(updatedBalanceWei) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
-                    + Converter.convertWeiToEth(balanceWei).toString()
+                    + Converter.convertWeiToEth(updatedBalanceWei).toString()
                     + " ETH");
         }
 
@@ -129,7 +131,7 @@ public class EthereumService {
                 .recipientAddress(recipientAddress)
                 .feesDto(new FeesDto(Converter.convertWeiToEth(systemFeeWei),
                         Converter.convertWeiToEth(totalGasFees), gasPriceWei))
-                .expectedBalance(Converter.convertWeiToEth(balanceWei.subtract(totalCost)))
+                .expectedBalance(Converter.convertWeiToEth(updatedBalanceWei.subtract(totalCost)))
                 .build();
     }
 
@@ -149,9 +151,10 @@ public class EthereumService {
             throw new WalletLockedException("Wallet is currently in a transaction, try again later");
         }
 
-        BigInteger balanceWei = getBalance(ethereumWallet.getAddress());
+        BigInteger updatedBalanceWei = getBalance(ethereumWallet.getAddress());
+        BigDecimal updatedBalanceEth = Converter.convertWeiToEth(updatedBalanceWei);
 
-        ethereumWallet.setBalance(balanceWei);
+        ethereumWallet.setBalance(updatedBalanceEth);
         ethereumWallet.setTradingLocked(true);
         ethereumRepository.save(ethereumWallet);
         
@@ -162,9 +165,9 @@ public class EthereumService {
         BigDecimal totalEth = transactionDto.getAmount().add(totalFeesEth);
         BigInteger totalWei = Converter.convertEthToWei(totalEth);
 
-        if (totalWei.compareTo(balanceWei) > 0) {
+        if (totalWei.compareTo(updatedBalanceWei) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
-                    + Converter.convertWeiToEth(balanceWei).toString()
+                    + Converter.convertWeiToEth(updatedBalanceWei).toString()
                     + " ETH");
         }
 
@@ -207,8 +210,11 @@ public class EthereumService {
                 toRecipientHash
         );
 
+        BigInteger finalBalanceWei = getBalance(ethereumWallet.getAddress());
+        BigDecimal finalBalanceEth = Converter.convertWeiToEth(finalBalanceWei);
+
         ethereumWallet.setTradingLocked(false);
-        ethereumWallet.setBalance(getBalance(ethereumWallet.getAddress()));
+        ethereumWallet.setBalance(finalBalanceEth);
         ethereumRepository.save(ethereumWallet);
 
         Map<String, String> txDetails = new HashMap<>();
