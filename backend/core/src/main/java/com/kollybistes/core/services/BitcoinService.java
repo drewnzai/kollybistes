@@ -79,7 +79,7 @@ public class BitcoinService {
 
         return WalletDto.builder()
                 .address(bitcoinWallet.getAddress())
-                .balance(Converter.convertSatsToBtc(bitcoinWallet.getBalance()))
+                .balance(bitcoinWallet.getBalance())
                 .build();
     }
 
@@ -97,7 +97,9 @@ public class BitcoinService {
                         () -> new EntityNotFoundException("User does not have a Bitcoin wallet")
                 );
 
-        bitcoinWallet.setBalance(bitcoinRPC.updateBalance(bitcoinWallet));
+        BigDecimal updatedBalanceBtc = bitcoinRPC.updateBalance(bitcoinWallet);
+        bitcoinWallet.setBalance(updatedBalanceBtc);
+        BigInteger updatedBalanceSats = Converter.convertBtcToSats(bitcoinWallet.getBalance());
 
         BigInteger amountSat = Converter.convertBtcToSats(amount);
         BigDecimal transactionFeeBtc = amount.multiply(TRANSACTION_FEE_PERCENT);
@@ -110,9 +112,9 @@ public class BitcoinService {
 
         BigInteger totalCost = amountSat.add(transactionFeeSat).add(networkFeeSat);
 
-        if (totalCost.compareTo(bitcoinWallet.getBalance()) > 0) {
+        if (totalCost.compareTo(updatedBalanceSats) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
-                    + Converter.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
+                    + updatedBalanceBtc.toString()
                     + " BTC");
         }
 
@@ -145,9 +147,12 @@ public class BitcoinService {
         if(bitcoinWallet.isTradingLocked()){
             throw new WalletLockedException("Wallet is currently in a transaction, try again later");
         }
-
+        
+        BigDecimal updatedBalanceBtc = bitcoinRPC.updateBalance(bitcoinWallet);
         bitcoinWallet.setTradingLocked(true);
-        bitcoinWallet.setBalance(bitcoinRPC.updateBalance(bitcoinWallet));
+        bitcoinWallet.setBalance(updatedBalanceBtc);
+        BigInteger updatedBalanceSats = Converter.convertBtcToSats(bitcoinWallet.getBalance());
+
         bitcoinWalletRepository.save(bitcoinWallet);
 
         BigDecimal totalFeesBtc = transactionDto
@@ -155,9 +160,9 @@ public class BitcoinService {
         BigDecimal totalBtc = transactionDto.getAmount().add(totalFeesBtc);
         BigInteger totalSats = Converter.convertBtcToSats(totalBtc);
 
-        if(totalSats.compareTo(bitcoinWallet.getBalance()) > 0){
+        if(totalSats.compareTo(updatedBalanceSats) > 0){
             throw new InsufficientBalanceException("Insufficient balance. You have "
-                    + Converter.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
+                    + updatedBalanceBtc.toString()
                     + " BTC");
         }
 
