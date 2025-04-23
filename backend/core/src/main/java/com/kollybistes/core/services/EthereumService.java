@@ -9,6 +9,7 @@ import com.kollybistes.common.models.NotificationEmail;
 import com.kollybistes.common.models.User;
 import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.EthereumRepository;
+import com.kollybistes.core.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -81,7 +82,14 @@ public class EthereumService {
                 .build();
     }
 
-    public TransactionDto calculateTransactionDetails(String recipientAddress, BigDecimal amountInEth) throws Exception {
+    public TransactionDto calculateTransactionDetails(String recipientAddress, BigDecimal amountInEth)
+            throws Exception {
+
+        if (!ValidationUtil.isValidEthereumAddress(recipientAddress)) {
+            throw new IllegalArgumentException("Invalid Ethereum address: " +
+                    recipientAddress);
+        }
+
         User user = authService.getCurrentUser();
 
         EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
@@ -121,6 +129,12 @@ public class EthereumService {
     }
 
     public Object confirmTransactionToOutsideWallet(TransactionDto transactionDto) throws Exception {
+
+        if (!ValidationUtil.isValidEthereumAddress(transactionDto.getRecipientAddress())) {
+            throw new IllegalArgumentException("Invalid Ethereum address: " +
+                    transactionDto.getRecipientAddress());
+        }
+
         User user = authService.getCurrentUser();
 
         EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)

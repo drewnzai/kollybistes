@@ -1,4 +1,4 @@
-package com.kollybistes.core.rpc;
+package com.kollybistes.core.util;
 
 
 import com.kollybistes.common.models.BitcoinWallet;

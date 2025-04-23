@@ -6,7 +6,7 @@ import com.kollybistes.common.models.*;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
 import com.kollybistes.core.repositories.EthereumRepository;
 import com.kollybistes.core.repositories.ExchangeRepository;
-import com.kollybistes.core.rpc.BitcoinRPC;
+import com.kollybistes.core.util.BitcoinRPC;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

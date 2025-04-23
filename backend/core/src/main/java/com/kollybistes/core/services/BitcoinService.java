@@ -9,7 +9,8 @@ import com.kollybistes.common.models.NotificationEmail;
 import com.kollybistes.common.models.User;
 import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
-import com.kollybistes.core.rpc.BitcoinRPC;
+import com.kollybistes.core.util.BitcoinRPC;
+import com.kollybistes.core.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class BitcoinService {
 
     @Value("${system.btc.address}")
     private String systemAddress;
+
     private static final BigDecimal TRANSACTION_FEE_PERCENT = new BigDecimal("0.15");
 
     public WalletDto createWallet() throws Exception {
@@ -76,7 +78,13 @@ public class BitcoinService {
                 .build();
     }
 
-    public TransactionDto calculateTransactionDetails(String recipientAddress, BigDecimal amount) throws Exception {
+    public TransactionDto calculateTransactionDetails(String recipientAddress, BigDecimal amount)
+            throws Exception {
+
+        if(!ValidationUtil.isValidBitcoinAddress(recipientAddress)){
+            throw new IllegalArgumentException("Invalid Bitcoin address: " + recipientAddress);
+        }
+
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
@@ -113,6 +121,12 @@ public class BitcoinService {
     }
 
     public Object confirmTransactionToOutsideWallet(TransactionDto transactionDto) throws Exception {
+
+        if(!ValidationUtil.isValidBitcoinAddress(transactionDto.getRecipientAddress())){
+            throw new IllegalArgumentException("Invalid Bitcoin address: " +
+                    transactionDto.getRecipientAddress());
+        }
+
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
