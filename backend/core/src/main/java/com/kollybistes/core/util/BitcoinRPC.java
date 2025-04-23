@@ -89,7 +89,7 @@ public class BitcoinRPC {
 
         BitcoinWallet wallet = new BitcoinWallet();
         wallet.setAddress(address);
-        wallet.setBalance(BigInteger.ZERO);
+        wallet.setBalance(BigDecimal.ZERO);
         wallet.setPrivateKey(privateKey);
         wallet.setPublicKey(publicKey);
         wallet.setCreatedAt(Date.from(Instant.now()));
@@ -98,7 +98,7 @@ public class BitcoinRPC {
         return wallet;
     }
 
-    public BigInteger getTrustedAddressBalance(String walletName) {
+    public BigDecimal getTrustedAddressBalance(String walletName) {
         String method = "getbalances";
         String response = sendRequest(method, new Object[]{}, walletName);
 
@@ -107,7 +107,7 @@ public class BitcoinRPC {
 
         BigDecimal balanceBTC = new BigDecimal(mine.get("trusted").toString());
 
-        return balanceBTC.multiply(BigDecimal.valueOf(100_000_000L)).toBigInteger();
+        return balanceBTC;
     }
 
     public String sendBitcoinFromSystem(String toAddress, BigInteger amountSat, BigInteger feeRate) {
@@ -147,12 +147,10 @@ public class BitcoinRPC {
         return new JSONObject(sendTxResponse).getString("result"); // TXID
     }
 
-    public BigInteger updateBalance(BitcoinWallet bitcoinWallet){
-        BigInteger updated = getTrustedAddressBalance(bitcoinWallet
-                        .getUser()
-                        .getUsername());
-
-        return updated;
+    public BigDecimal updateBalance(BitcoinWallet bitcoinWallet){
+        return getTrustedAddressBalance(bitcoinWallet
+                .getUser()
+                .getUsername());
     }
 
     public String estimateP2WPKHTransactionSize(int inputCount, int outputCount) {
