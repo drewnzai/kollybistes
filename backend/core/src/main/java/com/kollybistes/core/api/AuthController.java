@@ -21,29 +21,14 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("signup")
-    public Object signup(@RequestBody RegisterRequest registerRequest) throws Exception {
-
-        try{
+    public void signup(@RequestBody RegisterRequest registerRequest) {
             authService.signup(registerRequest);
-            return null;
-        }
-        catch(Exception e){
-            return ErrorResponse.builder().error(e.getMessage()).build();
-        }
-
     }
 
     @GetMapping("accountVerification/{token}")
     public String verifyAccount(@PathVariable String token) {
-
-        try{
             authService.verifyAccount(token);
             return "Account Activated Successfully";
-        }
-        catch(Exception e){
-            return "Account not activated";
-        }
-
     }
 
     @PostMapping("login")
@@ -66,14 +51,7 @@ public class AuthController {
 
     @PostMapping("refresh")
     public Object refresh(@RequestBody RefreshTokenRequest refreshTokenRequest) throws Exception{
-
-        try{
             return authService.refresh(refreshTokenRequest);
-        }
-        catch(Exception e){
-            return ErrorResponse.builder().error(e.getMessage()).build();
-        }
-
     }
 
 }
