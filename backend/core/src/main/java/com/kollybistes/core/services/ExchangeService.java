@@ -99,7 +99,9 @@ public class ExchangeService {
                         () -> new EntityNotFoundException("User does not have a Bitcoin wallet")
                 );
 
-        bitcoinWallet.setBalance(bitcoinRPC.updateBalance(bitcoinWallet));
+        BigDecimal updatedBalanceBtc = bitcoinRPC.updateBalance(bitcoinWallet);
+        bitcoinWallet.setBalance(updatedBalanceBtc);
+        BigInteger updatedBalanceSats = Converter.convertBtcToSats(bitcoinWallet.getBalance());
 
         BigDecimal amountBtc = exchangeDto.getAmountToExchange();
         BigDecimal systemTransactionFeeBtc = amountBtc.multiply(TRANSACTION_FEE_PERCENT);
@@ -114,13 +116,14 @@ public class ExchangeService {
         BigDecimal exchangeRate = apiHandler.getBtcToEthExchangeRate();
         BigDecimal expectedReturnEth = amountBtc.multiply(exchangeRate);
 
-        BigInteger totalCost = amountSat.add(systemTransactionFeeSat).add(networkFeeSat);
-        BigDecimal expectedBalance = bitcoinRPC
-                .convertSatsToBtc(bitcoinWallet.getBalance().subtract(totalCost));
+        BigInteger totalCostSats = amountSat.add(systemTransactionFeeSat).add(networkFeeSat);
+        BigDecimal totalCostBtc = Converter.convertSatsToBtc(totalCostSats);
 
-        if (totalCost.compareTo(bitcoinWallet.getBalance()) > 0) {
+        BigDecimal expectedBalance = updatedBalanceBtc.subtract(totalCostBtc);
+
+        if (totalCostSats.compareTo(updatedBalanceSats) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
-                    + Converter.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
+                    + updatedBalanceBtc.toString()
             + " BTC");
         }
 
@@ -156,9 +159,10 @@ public class ExchangeService {
                         () -> new EntityNotFoundException("User does not have an Ethereum wallet")
                 );
 
-        BigInteger balanceWei = getBalance(ethereumWallet.getAddress());
+        BigInteger updatedBalanceWei = getBalance(ethereumWallet.getAddress());
+        BigDecimal updatedBalanceEth = Converter.convertWeiToEth(updatedBalanceWei);
 
-        ethereumWallet.setBalance(balanceWei);
+        ethereumWallet.setBalance(updatedBalanceEth);
         ethereumRepository.save(ethereumWallet);
 
         BigDecimal amountInEth = exchangeDto.getAmountToExchange();
@@ -180,9 +184,9 @@ public class ExchangeService {
 
         BigInteger totalCost = amountInWei.add(systemFeeWei).add(totalGasFees);
 
-        if (totalCost.compareTo(balanceWei) > 0) {
+        if (totalCost.compareTo(updatedBalanceWei) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
-            + Converter.convertWeiToEth(balanceWei).toString()
+            + Converter.convertWeiToEth(updatedBalanceWei).toString()
             + " ETH");
         }
 
@@ -192,9 +196,9 @@ public class ExchangeService {
                 .amountToExchange(amountInEth)
                 .exchangeType(ExchangeType.ETH_TO_BTC.name())
                 .expectedAmountGotten(expectedReturnBtc)
-                .expectedBalance(Converter.convertWeiToEth(balanceWei.subtract(totalCost)))
+                .expectedBalance(Converter.convertWeiToEth(updatedBalanceWei.subtract(totalCost)))
                 .feesDto(
-                        new FeesDto(Converter.convertWeiToEth(systemFeeWei),
+                        new FeesDto(systemFeeEth,
                                 Converter.convertWeiToEth(totalGasFees), gasPriceWei)
                 )
                 .rate(exchangeRateEthToBtc)
@@ -223,16 +227,18 @@ public class ExchangeService {
                         () -> new EntityNotFoundException("User does not have an Ethereum wallet")
                 );
 
-        bitcoinWallet.setBalance(bitcoinRPC.updateBalance(bitcoinWallet));
+        BigDecimal updatedBalanceBtc = bitcoinRPC.updateBalance(bitcoinWallet);
+        bitcoinWallet.setBalance(updatedBalanceBtc);
+        BigInteger updatedBalanceSats = Converter.convertBtcToSats(bitcoinWallet.getBalance());
 
         BigDecimal totalFeesBtc = exchangeDto
                 .getFeesDto().getSystemFee().add(exchangeDto.getFeesDto().getTransactionFee());
         BigDecimal totalBtc = exchangeDto.getAmountToExchange().add(totalFeesBtc);
         BigInteger totalSats = Converter.convertBtcToSats(totalBtc);
 
-        if(totalSats.compareTo(bitcoinWallet.getBalance()) > 0) {
+        if(totalSats.compareTo(updatedBalanceSats) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
-                    + Converter.convertSatsToBtc(bitcoinWallet.getBalance()).toString()
+                    + updatedBalanceBtc.toString()
             + " BTC");
         }
 
@@ -308,9 +314,10 @@ public class ExchangeService {
             throw new WalletLockedException("Wallet is currently in a transaction, try again later");
         }
 
-        BigInteger balanceWei = getBalance(ethereumWallet.getAddress());
+        BigInteger updatedBalanceWei = getBalance(ethereumWallet.getAddress());
+        BigDecimal updatedBalanceEth = Converter.convertWeiToEth(updatedBalanceWei);
 
-        ethereumWallet.setBalance(balanceWei);
+        ethereumWallet.setBalance(updatedBalanceEth);
         ethereumWallet.setTradingLocked(true);
         ethereumRepository.save(ethereumWallet);
 
@@ -321,9 +328,9 @@ public class ExchangeService {
         BigDecimal totalEth = exchangeDto.getAmountToExchange().add(totalFeesEth);
         BigInteger totalWei = Converter.convertEthToWei(totalEth);
 
-        if (totalWei.compareTo(balanceWei) > 0) {
+        if (totalWei.compareTo(updatedBalanceWei) > 0) {
             throw new InsufficientBalanceException("Insufficient balance. You have "
-                    + Converter.convertWeiToEth(balanceWei).toString()
+                    + Converter.convertWeiToEth(updatedBalanceWei).toString()
             + " ETH");
         }
 
