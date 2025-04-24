@@ -15,6 +15,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+
+    /* HttpStatus.BAD_REQUEST 400
+    HttpStatus.UNAUTHORIZED 401
+    HttpStatus.NOT_FOUND 404
+    HttpStatus.INTERNAL_SERVER_ERROR 500*/
+
     @ExceptionHandler()
     public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException e) {
         ErrorResponse errorResponse= new ErrorResponse(e.getMessage());
@@ -57,7 +63,7 @@ public class GlobalExceptionHandler {
     })
     public ResponseEntity<ErrorResponse> handleMalformedJWT(Exception e){
         ErrorResponse errorResponse = new ErrorResponse("JWT is malformed");
-        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({
