@@ -22,8 +22,8 @@ public class TransactionService {
                                 String txHash){
         
         Transaction transaction = Transaction.builder()
-                .senderWalletAddress(sender)
-                .recipientWalletAddress(recipient)
+                .senderAddress(sender)
+                .recipientAddress(recipient)
                 .amount(amount)
                 .transactionHash(txHash)
                 .createdAt(Date.from(Instant.now()))
