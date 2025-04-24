@@ -1,10 +1,12 @@
 package com.kollybistes.core.api;
 
-import com.kollybistes.core.util.ErrorResponse;
 import com.kollybistes.common.dtos.TransactionDto;
+import com.kollybistes.common.dtos.WalletDto;
 import com.kollybistes.core.services.BitcoinService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bitcoin/")
@@ -14,52 +16,24 @@ public class BitcoinController {
     private final BitcoinService bitcoinService;
 
     @PostMapping("wallet/create")
-    public Object createWallet() {
-        try {
+    public WalletDto createWallet() throws Exception {
             return bitcoinService.createWallet();
-        } catch (Exception e) {
-            return ErrorResponse
-                    .builder()
-                    .error(e.getMessage())
-                    .build();
-        }
     }
 
     @GetMapping("wallet/balance")
-    public Object getBalance() {
-        try {
+    public WalletDto getBalance() throws Exception {
             return bitcoinService.getWalletBalance();
-        } catch (Exception e) {
-            return ErrorResponse
-                    .builder()
-                    .error(e.getMessage())
-                    .build();
-        }
     }
 
     @PostMapping("calculate")
-    public Object calculateTransactionDetails(@RequestBody TransactionDto transactionDto) throws Exception {
-        try{
+    public TransactionDto calculateTransactionDetails(@RequestBody TransactionDto transactionDto) throws Exception {
             return bitcoinService.calculateTransactionDetails(transactionDto.getRecipientAddress(),
                     transactionDto.getAmount());
-        }catch(Exception e){
-            return ErrorResponse
-                    .builder()
-                    .error(e.getMessage())
-                    .build();
-        }
     }
 
     @PostMapping("confirm")
-    public Object confirmTransaction(@RequestBody TransactionDto transactionDto) throws Exception {
-        try{
+    public Map<String, String> confirmTransaction(@RequestBody TransactionDto transactionDto) throws Exception {
             return bitcoinService.confirmTransactionToOutsideWallet(transactionDto);
-        }catch(Exception e){
-            return ErrorResponse
-                    .builder()
-                    .error(e.getMessage())
-                    .build();
-        }
     }
 
 }
