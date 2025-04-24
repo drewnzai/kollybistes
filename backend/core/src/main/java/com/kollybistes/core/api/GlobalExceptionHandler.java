@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
     HttpStatus.NOT_FOUND 404
     HttpStatus.INTERNAL_SERVER_ERROR 500*/
 
-    @ExceptionHandler()
+    @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException e) {
         ErrorResponse errorResponse= new ErrorResponse(e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
