@@ -4,6 +4,8 @@ import com.kollybistes.core.exceptions.*;
 import com.kollybistes.core.util.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -27,6 +29,21 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleKnownExceptions(Exception e) {
         ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleWrongPassword(BadCredentialsException e){
+        ErrorResponse errorResponse = new ErrorResponse("Wrong password");
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler({
+            UsernameNotFoundException.class,
+            NullPointerException.class
+    })
+    public ResponseEntity<ErrorResponse> handleUserNotExisting(Exception e){
+        ErrorResponse errorResponse = new ErrorResponse("Username does not exist");
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(Exception.class)
