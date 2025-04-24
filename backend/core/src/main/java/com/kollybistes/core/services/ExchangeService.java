@@ -14,6 +14,7 @@ import com.kollybistes.core.util.BitcoinRPC;
 import com.kollybistes.core.util.Converter;
 import com.kollybistes.core.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -70,7 +71,7 @@ public class ExchangeService {
     private static final BigDecimal MIN_BTC_AMOUNT = new BigDecimal("0.000012"); // ~1,200 sats
     private static final BigDecimal MIN_ETH_AMOUNT = new BigDecimal("0.00061");  // ~610,000,000,000,000 wei
 
-    public ExchangeDto calculateExchangeDetails(ExchangeDto exchangeDto) throws Exception {
+    public ExchangeDto calculateExchangeDetails(ExchangeDto exchangeDto) {
         if(exchangeDto.getExchangeType().equals("BTC_TO_ETH")){
             return calculateBtcToEth(exchangeDto);
         }
@@ -82,7 +83,7 @@ public class ExchangeService {
         }
     }
 
-    public Map<String, String> confirmExchange(ExchangeDto exchangeDto) throws Exception {
+    public Map<String, String> confirmExchange(ExchangeDto exchangeDto) {
         if(exchangeDto.getExchangeType().equals("BTC_TO_ETH")){
             return confirmBtcToEth(exchangeDto);
         }
@@ -113,7 +114,7 @@ public class ExchangeService {
         );
     }
 
-    private ExchangeDto calculateBtcToEth(ExchangeDto exchangeDto) throws Exception {
+    private ExchangeDto calculateBtcToEth(ExchangeDto exchangeDto) {
 
         if (exchangeDto.getAmountToExchange().compareTo(MIN_BTC_AMOUNT) < 0) {
             throw new InsufficientBalanceException("Exchange amount is too low. Minimum is " + MIN_BTC_AMOUNT + " BTC.");
@@ -172,7 +173,7 @@ public class ExchangeService {
                 .build();
     }
 
-    private ExchangeDto calculateEthToBtc(ExchangeDto exchangeDto) throws Exception{
+    private ExchangeDto calculateEthToBtc(ExchangeDto exchangeDto) {
 
         if (exchangeDto.getAmountToExchange().compareTo(MIN_ETH_AMOUNT) < 0) {
             throw new InsufficientBalanceException
@@ -232,7 +233,7 @@ public class ExchangeService {
                 .build();
     }
 
-    private Map<String, String> confirmBtcToEth(ExchangeDto exchangeDto) throws Exception {
+    private Map<String, String> confirmBtcToEth(ExchangeDto exchangeDto) {
 
         if (exchangeDto.getAmountToExchange().compareTo(MIN_BTC_AMOUNT) < 0) {
             throw new InsufficientBalanceException("Exchange amount is too low. Minimum is " + MIN_BTC_AMOUNT + " BTC.");
@@ -318,7 +319,7 @@ public class ExchangeService {
         return txHashes;
     }
 
-    private Map<String, String> confirmEthToBtc(ExchangeDto exchangeDto) throws Exception {
+    private Map<String, String> confirmEthToBtc(ExchangeDto exchangeDto) {
 
         if (exchangeDto.getAmountToExchange().compareTo(MIN_ETH_AMOUNT) < 0) {
             throw new InsufficientBalanceException
@@ -406,10 +407,11 @@ public class ExchangeService {
         return txHashes;
     }
 
+    @SneakyThrows
     private String sendEtherToAddress(String recipientAddress,
                                       BigDecimal amountInEther,
                                       BigInteger gasPriceWei,
-                                      Credentials credentials) throws Exception {
+                                      Credentials credentials){
 
         BigInteger nonce = web3j.ethGetTransactionCount(
                         credentials.getAddress(), DefaultBlockParameterName.LATEST)
@@ -435,11 +437,13 @@ public class ExchangeService {
         return response.getTransactionHash(); // TXID
     }
 
-    private Credentials loadSystemWalletCredentials() throws Exception {
+    @SneakyThrows
+    private Credentials loadSystemWalletCredentials() {
         return WalletUtils.loadCredentials(keystorePassword, new File(keystorePath));
     }
 
-    private BigInteger getBalance(String address) throws Exception {
+    @SneakyThrows
+    private BigInteger getBalance(String address) {
         EthGetBalance balance = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
         return balance.getBalance(); // in wei
     }
