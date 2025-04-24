@@ -10,10 +10,7 @@ import com.kollybistes.common.models.User;
 import com.kollybistes.common.models.VerificationToken;
 import com.kollybistes.core.auth.JwtUtil;
 import com.kollybistes.core.auth.UserDetailsImpl;
-import com.kollybistes.core.exceptions.ExpiredTokenException;
-import com.kollybistes.core.exceptions.IllegalFormatException;
-import com.kollybistes.core.exceptions.ResourceAlreadyExistsException;
-import com.kollybistes.core.exceptions.EntityNotFoundException;
+import com.kollybistes.core.exceptions.*;
 import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.RefreshTokenRepository;
 import com.kollybistes.core.repositories.UserRepository;
@@ -24,6 +21,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -113,15 +111,19 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginRequest loginRequest) throws Exception {
+        User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(
+                () -> new UsernameNotFoundException("Could not find user")
+        );
+
+        if(!user.isEnabled()){
+            throw new UserNotVerifiedException("User is not verified. Please check email and verify");
+        }
+
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
                         loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(
-                () -> new Exception("Could not find user")
-        );
 
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken(UUID.randomUUID().toString());
