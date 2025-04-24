@@ -13,6 +13,7 @@ import com.kollybistes.core.repositories.EthereumWalletRepository;
 import com.kollybistes.core.util.Converter;
 import com.kollybistes.core.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.*;
@@ -47,7 +48,8 @@ public class EthereumService {
     @Value("${system.eth.chainId}")
     private String chainId;
 
-    public WalletDto createWallet() throws Exception {
+    @SneakyThrows //Do not want outright "throws Exception" in method signature
+    public WalletDto createWallet() {
         User user = authService.getCurrentUser();
 
         if (ethereumWalletRepository.existsByUser(user)) {
@@ -84,8 +86,7 @@ public class EthereumService {
                 .build();
     }
 
-    public TransactionDto calculateTransactionDetails(String recipientAddress, BigDecimal amountInEth)
-            throws Exception {
+    public TransactionDto calculateTransactionDetails(String recipientAddress, BigDecimal amountInEth) {
 
         if (!ValidationUtil.isValidEthereumAddress(recipientAddress)) {
             throw new IllegalFormatException("Invalid Ethereum address: " +
@@ -135,7 +136,8 @@ public class EthereumService {
                 .build();
     }
 
-    public Map<String, String> confirmTransactionToOutsideWallet(TransactionDto transactionDto) throws Exception {
+    @SneakyThrows
+    public Map<String, String> confirmTransactionToOutsideWallet(TransactionDto transactionDto) {
 
         if (!ValidationUtil.isValidEthereumAddress(transactionDto.getRecipientAddress())) {
             throw new IllegalFormatException("Invalid Ethereum address: " +
@@ -227,7 +229,7 @@ public class EthereumService {
         return txDetails;
     }
 
-    public WalletDto getWalletBalance() throws Exception {
+    public WalletDto getWalletBalance() {
         User user = authService.getCurrentUser();
 
         EthereumWallet ethereumWallet = ethereumWalletRepository.findByUser(user)
@@ -249,7 +251,8 @@ public class EthereumService {
 
     }
 
-    private BigInteger getBalance(String address) throws Exception {
+    @SneakyThrows
+    private BigInteger getBalance(String address) {
         EthGetBalance balance = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
         return balance.getBalance(); // in wei
     }
