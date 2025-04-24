@@ -2,7 +2,7 @@ package com.kollybistes.core.api;
 
 import com.kollybistes.common.dtos.TransactionDto;
 import com.kollybistes.common.dtos.WalletDto;
-import com.kollybistes.core.api.swaggerinterfaces.BitcoinApi;
+import com.kollybistes.core.api.swaggerinterfaces.GenericCryptoApi;
 import com.kollybistes.core.services.BitcoinService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,7 +14,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/bitcoin/")
 @AllArgsConstructor
-public class BitcoinController implements BitcoinApi {
+public class BitcoinController implements GenericCryptoApi {
 
     private final BitcoinService bitcoinService;
 

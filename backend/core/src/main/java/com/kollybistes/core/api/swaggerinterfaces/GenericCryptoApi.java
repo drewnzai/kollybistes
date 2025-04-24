@@ -11,15 +11,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 
-@Tag(name = "Bitcoin", description = "The API for Bitcoin Wallet related functionality")
-public interface BitcoinApi {
+@Tag(name = "Wallet API", description = "The API for Crypto Wallet related functionality")
+public interface GenericCryptoApi {
 
     @Operation(
-            summary = "Bitcoin Wallet Creation",
-            description = "Creates a Bitcoin Wallet for a user"
+            summary = "Crypto Wallet Creation",
+            description = "Creates a Crypto Wallet for a user"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successful Bitcoin Wallet creation"),
+            @ApiResponse(responseCode = "201", description = "successful Crypto Wallet creation"),
             @ApiResponse(responseCode = "400", description = "could not create account")
     })
     ResponseEntity<WalletDto> createWallet() throws Exception;

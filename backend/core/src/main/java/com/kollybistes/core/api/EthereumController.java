@@ -2,6 +2,7 @@ package com.kollybistes.core.api;
 
 import com.kollybistes.common.dtos.TransactionDto;
 import com.kollybistes.common.dtos.WalletDto;
+import com.kollybistes.core.api.swaggerinterfaces.GenericCryptoApi;
 import com.kollybistes.core.services.EthereumService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,24 +14,27 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/ethereum/")
 @AllArgsConstructor
-public class EthereumController {
+public class EthereumController implements GenericCryptoApi {
 
     private final EthereumService ethereumService;
 
     @GetMapping("wallet/create")
-    public ResponseEntity<WalletDto> createWallet() throws Exception {
+    @Override
+    public ResponseEntity<WalletDto> createWallet() {
             return new ResponseEntity<>(ethereumService.createWallet(),
                     HttpStatus.CREATED);
     }
 
     @GetMapping("wallet/balance")
-    public ResponseEntity<WalletDto> getBalance() throws Exception {
+    @Override
+    public ResponseEntity<WalletDto> getBalance() {
         return new ResponseEntity<>(ethereumService.getWalletBalance(),
                 HttpStatus.OK);
     }
 
     @PostMapping("calculate")
-    public ResponseEntity<TransactionDto> calculateTransactionDetails(@RequestBody TransactionDto transactionDto) throws Exception {
+    @Override
+    public ResponseEntity<TransactionDto> calculateTransactionDetails(@RequestBody TransactionDto transactionDto) {
             return new ResponseEntity<>(ethereumService.
                     calculateTransactionDetails(transactionDto.getRecipientAddress(),
                             transactionDto.getAmount()),
@@ -38,7 +42,8 @@ public class EthereumController {
     }
 
     @PostMapping("confirm")
-    public ResponseEntity<Map<String, String>> confirmTransaction(@RequestBody TransactionDto transactionDto) throws Exception {
+    @Override
+    public ResponseEntity<Map<String, String>> confirmTransaction(@RequestBody TransactionDto transactionDto) {
             return new ResponseEntity<>(ethereumService.
                     confirmTransactionToOutsideWallet
                             (transactionDto),
