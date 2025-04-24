@@ -34,14 +34,14 @@ public class ExchangeController {
     }
 
     @PostMapping("calculate")
-    public ResponseEntity<ExchangeDto> calculateExchangeDetails(@RequestBody ExchangeDto exchangeDto) throws Exception {
+    public ResponseEntity<ExchangeDto> calculateExchangeDetails(@RequestBody ExchangeDto exchangeDto) {
             return new ResponseEntity<>(exchangeService.
                     calculateExchangeDetails(exchangeDto),
                     HttpStatus.OK);
     }
 
     @PostMapping("confirm")
-    public ResponseEntity<Map<String, String>> confirmExchange(@RequestBody ExchangeDto exchangeDto) throws Exception {
+    public ResponseEntity<Map<String, String>> confirmExchange(@RequestBody ExchangeDto exchangeDto) {
             return new ResponseEntity<>(exchangeService.
                     confirmExchange(exchangeDto),
                     HttpStatus.OK);
