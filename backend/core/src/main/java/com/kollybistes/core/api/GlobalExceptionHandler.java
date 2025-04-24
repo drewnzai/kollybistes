@@ -2,6 +2,9 @@ package com.kollybistes.core.api;
 
 import com.kollybistes.core.exceptions.*;
 import com.kollybistes.core.util.ErrorResponse;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -47,6 +50,17 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
+            MalformedJwtException.class,
+            ExpiredJwtException.class,
+            UnsupportedJwtException.class,
+            IllegalArgumentException.class
+    })
+    public ResponseEntity<ErrorResponse> handleMalformedJWT(Exception e){
+        ErrorResponse errorResponse = new ErrorResponse("JWT is malformed");
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler({
             UserNotVerifiedException.class
     })
     public ResponseEntity<ErrorResponse> handleUserNotVerified(UserNotVerifiedException e){
@@ -56,7 +70,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpectedExceptions(Exception e) {
-        e.printStackTrace(); // Prints the full stack trace to the console for debugging
+        e.printStackTrace();
 
         ErrorResponse errorResponse = new ErrorResponse("An unexpected error occurred." +
                 " Please contact support.");
