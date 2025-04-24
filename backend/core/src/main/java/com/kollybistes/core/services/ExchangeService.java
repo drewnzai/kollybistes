@@ -4,13 +4,19 @@ import com.kollybistes.common.dtos.ExchangeDto;
 import com.kollybistes.common.dtos.FeesDto;
 import com.kollybistes.common.models.*;
 import com.kollybistes.core.exceptions.*;
+import com.kollybistes.core.mappers.ExchangeMapper;
+import com.kollybistes.core.misc.PaginationRequest;
+import com.kollybistes.core.misc.PagingResult;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
 import com.kollybistes.core.repositories.EthereumRepository;
 import com.kollybistes.core.repositories.ExchangeRepository;
 import com.kollybistes.core.util.BitcoinRPC;
 import com.kollybistes.core.util.Converter;
+import com.kollybistes.core.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.RawTransaction;
@@ -29,6 +35,7 @@ import java.math.MathContext;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -41,6 +48,7 @@ public class ExchangeService {
     private final BitcoinWalletRepository bitcoinWalletRepository;
     private final BitcoinRPC bitcoinRPC;
     private final Web3j web3j;
+    private final ExchangeMapper exchangeMapper;
 
     @Value("${system.btc.address}")
     private String systemBtcAddress;
@@ -84,6 +92,25 @@ public class ExchangeService {
         else{
             throw new IllegalFormatException("Not a valid exchange, check the exchange type");
         }
+    }
+
+    public PagingResult<ExchangeDto> getExchanges(PaginationRequest paginationRequest){
+        User user = authService.getCurrentUser();
+
+        Pageable pageable = PaginationUtil.getPageable(paginationRequest);
+        final Page<Exchange> userExchanges = exchangeRepository.findAllByUser(user, pageable);
+        List<ExchangeDto> exchanges = userExchanges
+                .stream()
+                .map(exchangeMapper::exchangeToExchangeDto).toList();
+
+        return new PagingResult<>(
+                exchanges,
+                userExchanges.getTotalPages(),
+                userExchanges.getTotalElements(),
+                userExchanges.getSize(),
+                userExchanges.getNumber(),
+                userExchanges.isEmpty()
+        );
     }
 
     private ExchangeDto calculateBtcToEth(ExchangeDto exchangeDto) throws Exception {
