@@ -1,6 +1,7 @@
 package com.kollybistes.core.api;
 
 import com.kollybistes.common.dtos.ExchangeDto;
+import com.kollybistes.core.api.swaggerinterfaces.ExchangeApi;
 import com.kollybistes.core.misc.PaginationRequest;
 import com.kollybistes.core.misc.PagingResult;
 import com.kollybistes.core.services.ExchangeService;
@@ -15,11 +16,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/exchange/")
 @AllArgsConstructor
-public class ExchangeController {
+public class ExchangeController implements ExchangeApi {
 
     private final ExchangeService exchangeService;
 
     @GetMapping
+    @Override
     public ResponseEntity<PagingResult<ExchangeDto>> getExchanges(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
@@ -34,6 +36,7 @@ public class ExchangeController {
     }
 
     @PostMapping("calculate")
+    @Override
     public ResponseEntity<ExchangeDto> calculateExchangeDetails(@RequestBody ExchangeDto exchangeDto) {
             return new ResponseEntity<>(exchangeService.
                     calculateExchangeDetails(exchangeDto),
@@ -41,6 +44,7 @@ public class ExchangeController {
     }
 
     @PostMapping("confirm")
+    @Override
     public ResponseEntity<Map<String, String>> confirmExchange(@RequestBody ExchangeDto exchangeDto) {
             return new ResponseEntity<>(exchangeService.
                     confirmExchange(exchangeDto),
