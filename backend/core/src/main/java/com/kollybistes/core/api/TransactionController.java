@@ -1,6 +1,7 @@
 package com.kollybistes.core.api;
 
 import com.kollybistes.common.dtos.TransactionDto;
+import com.kollybistes.core.api.swaggerinterfaces.TransactionApi;
 import com.kollybistes.core.misc.PaginationRequest;
 import com.kollybistes.core.misc.PagingResult;
 import com.kollybistes.core.services.TransactionService;
@@ -16,11 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/transactions/")
 @AllArgsConstructor
-public class TransactionController {
+public class TransactionController implements TransactionApi {
 
     private final TransactionService transactionService;
 
     @GetMapping
+    @Override
     public ResponseEntity<PagingResult<TransactionDto>> getTransactions(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
