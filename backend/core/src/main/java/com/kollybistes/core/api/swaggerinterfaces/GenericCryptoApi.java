@@ -25,12 +25,13 @@ public interface GenericCryptoApi {
     ResponseEntity<WalletDto> createWallet();
 
     @Operation(
-            summary = "Sign up a new user",
-            description = "Signs up a user after performing necessary checks"
+            summary = "Gets Wallet Balance",
+            description = "Gets the balance currently held in a user's wallet"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successful account creation"),
-            @ApiResponse(responseCode = "400", description = "could not create account")
+            @ApiResponse(responseCode = "200", description = "successful balance acquisition"),
+            @ApiResponse(responseCode = "400", description = "could not get the balance"),
+            @ApiResponse(responseCode = "404", description = "wallet does not exist or is currently locked")
     })
     ResponseEntity<WalletDto> getBalance();
 
