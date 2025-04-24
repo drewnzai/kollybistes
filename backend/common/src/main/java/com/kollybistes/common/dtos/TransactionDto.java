@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -17,4 +18,6 @@ public class TransactionDto {
     private FeesDto feesDto;
     private BigDecimal amount;
     private BigDecimal expectedBalance;
+    private String transactionHash;
+    private Date createdAt;
 }
