@@ -6,7 +6,11 @@ import com.kollybistes.core.misc.PagingResult;
 import com.kollybistes.core.services.ExchangeService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/exchange/")
@@ -16,7 +20,7 @@ public class ExchangeController {
     private final ExchangeService exchangeService;
 
     @GetMapping
-    public PagingResult<ExchangeDto> getExchanges(
+    public ResponseEntity<PagingResult<ExchangeDto>> getExchanges(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
             @RequestParam(required = false) String sortField,
@@ -24,17 +28,22 @@ public class ExchangeController {
     ){
         final PaginationRequest paginationRequest = new PaginationRequest(page, size, sortField, direction);
 
-        return exchangeService
-                .getExchanges(paginationRequest);
+        return new ResponseEntity<>(exchangeService
+                .getExchanges(paginationRequest),
+                HttpStatus.OK);
     }
 
     @PostMapping("calculate")
-    public Object calculateExchangeDetails(@RequestBody ExchangeDto exchangeDto) throws Exception {
-            return exchangeService.calculateExchangeDetails(exchangeDto);
+    public ResponseEntity<ExchangeDto> calculateExchangeDetails(@RequestBody ExchangeDto exchangeDto) throws Exception {
+            return new ResponseEntity<>(exchangeService.
+                    calculateExchangeDetails(exchangeDto),
+                    HttpStatus.OK);
     }
 
     @PostMapping("confirm")
-    public Object confirmExchange(@RequestBody ExchangeDto exchangeDto) throws Exception {
-            return exchangeService.confirmExchange(exchangeDto);
+    public ResponseEntity<Map<String, String>> confirmExchange(@RequestBody ExchangeDto exchangeDto) throws Exception {
+            return new ResponseEntity<>(exchangeService.
+                    confirmExchange(exchangeDto),
+                    HttpStatus.OK);
     }
 }

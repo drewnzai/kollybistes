@@ -6,6 +6,8 @@ import com.kollybistes.core.misc.PagingResult;
 import com.kollybistes.core.services.TransactionService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,7 +21,7 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @GetMapping
-    public PagingResult<TransactionDto> getTransactions(
+    public ResponseEntity<PagingResult<TransactionDto>> getTransactions(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
             @RequestParam(required = false) String sortField,
@@ -27,7 +29,8 @@ public class TransactionController {
     ){
         final PaginationRequest paginationRequest = new PaginationRequest(page, size, sortField, direction);
 
-        return transactionService
-                .getTransactions(paginationRequest);
+        return new ResponseEntity<>(transactionService
+                .getTransactions(paginationRequest),
+                HttpStatus.OK);
     }
 }

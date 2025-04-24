@@ -2,11 +2,14 @@ package com.kollybistes.core.api;
 
 
 import com.kollybistes.common.dtos.LoginRequest;
+import com.kollybistes.common.dtos.LoginResponse;
 import com.kollybistes.common.dtos.RefreshTokenRequest;
 import com.kollybistes.common.dtos.RegisterRequest;
 import com.kollybistes.core.services.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,24 +21,30 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("signup")
-    public void signup(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<String> signup(@RequestBody RegisterRequest registerRequest) {
             authService.signup(registerRequest);
+            return new ResponseEntity<>("Account created successfully," +
+                    " check email for verification details",
+                    HttpStatus.CREATED);
     }
 
     @GetMapping("accountVerification/{token}")
-    public String verifyAccount(@PathVariable String token) {
+    public ResponseEntity<String> verifyAccount(@PathVariable String token) {
             authService.verifyAccount(token);
-            return "Account Activated Successfully";
+            return new ResponseEntity<>("Account Activated Successfully",
+                    HttpStatus.OK);
     }
 
     @PostMapping("login")
-    public Object login(@RequestBody LoginRequest loginRequest) throws Exception {
-            return authService.login(loginRequest);
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) throws Exception {
+            return new ResponseEntity<>(authService.login(loginRequest),
+                    HttpStatus.OK);
     }
 
     @PostMapping("refresh")
-    public Object refresh(@RequestBody RefreshTokenRequest refreshTokenRequest) throws Exception{
-            return authService.refresh(refreshTokenRequest);
+    public ResponseEntity<LoginResponse> refresh(@RequestBody RefreshTokenRequest refreshTokenRequest) throws Exception{
+            return new ResponseEntity<>(authService.refresh(refreshTokenRequest),
+                    HttpStatus.OK);
     }
 
 }

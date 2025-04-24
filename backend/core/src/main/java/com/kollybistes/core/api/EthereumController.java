@@ -4,6 +4,8 @@ import com.kollybistes.common.dtos.TransactionDto;
 import com.kollybistes.common.dtos.WalletDto;
 import com.kollybistes.core.services.EthereumService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -16,23 +18,30 @@ public class EthereumController {
     private final EthereumService ethereumService;
 
     @GetMapping("wallet/create")
-    public WalletDto createWallet() throws Exception {
-            return ethereumService.createWallet();
+    public ResponseEntity<WalletDto> createWallet() throws Exception {
+            return new ResponseEntity<>(ethereumService.createWallet(),
+                    HttpStatus.CREATED);
     }
 
     @GetMapping("wallet/balance")
-    public WalletDto getBalance() throws Exception {
-        return ethereumService.getWalletBalance();
+    public ResponseEntity<WalletDto> getBalance() throws Exception {
+        return new ResponseEntity<>(ethereumService.getWalletBalance(),
+                HttpStatus.OK);
     }
 
     @PostMapping("calculate")
-    public TransactionDto calculateTransactionDetails(@RequestBody TransactionDto transactionDto) throws Exception {
-            return ethereumService.calculateTransactionDetails(transactionDto.getRecipientAddress()
-                    , transactionDto.getAmount());
+    public ResponseEntity<TransactionDto> calculateTransactionDetails(@RequestBody TransactionDto transactionDto) throws Exception {
+            return new ResponseEntity<>(ethereumService.
+                    calculateTransactionDetails(transactionDto.getRecipientAddress(),
+                            transactionDto.getAmount()),
+                    HttpStatus.OK);
     }
 
     @PostMapping("confirm")
-    public Map<String, String> confirmTransaction(@RequestBody TransactionDto transactionDto) throws Exception {
-            return ethereumService.confirmTransactionToOutsideWallet(transactionDto);
+    public ResponseEntity<Map<String, String>> confirmTransaction(@RequestBody TransactionDto transactionDto) throws Exception {
+            return new ResponseEntity<>(ethereumService.
+                    confirmTransactionToOutsideWallet
+                            (transactionDto),
+                    HttpStatus.OK);
     }
 }
