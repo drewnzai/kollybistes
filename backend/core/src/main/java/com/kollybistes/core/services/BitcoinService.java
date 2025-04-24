@@ -133,7 +133,7 @@ public class BitcoinService {
                 .build();
     }
 
-    public Object confirmTransactionToOutsideWallet(TransactionDto transactionDto) throws Exception {
+    public Map<String, String> confirmTransactionToOutsideWallet(TransactionDto transactionDto) throws Exception {
 
         if(!ValidationUtil.isValidBitcoinAddress(transactionDto.getRecipientAddress())){
             throw new IllegalFormatException("Invalid Bitcoin address: " +
