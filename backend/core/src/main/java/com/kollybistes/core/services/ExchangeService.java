@@ -82,7 +82,7 @@ public class ExchangeService {
         }
     }
 
-    public Object confirmExchange(ExchangeDto exchangeDto) throws Exception {
+    public Map<String, String> confirmExchange(ExchangeDto exchangeDto) throws Exception {
         if(exchangeDto.getExchangeType().equals("BTC_TO_ETH")){
             return confirmBtcToEth(exchangeDto);
         }
@@ -232,7 +232,7 @@ public class ExchangeService {
                 .build();
     }
 
-    private Object confirmBtcToEth(ExchangeDto exchangeDto) throws Exception {
+    private Map<String, String> confirmBtcToEth(ExchangeDto exchangeDto) throws Exception {
 
         if (exchangeDto.getAmountToExchange().compareTo(MIN_BTC_AMOUNT) < 0) {
             throw new InsufficientBalanceException("Exchange amount is too low. Minimum is " + MIN_BTC_AMOUNT + " BTC.");
@@ -318,7 +318,7 @@ public class ExchangeService {
         return txHashes;
     }
 
-    private Object confirmEthToBtc(ExchangeDto exchangeDto) throws Exception {
+    private Map<String, String> confirmEthToBtc(ExchangeDto exchangeDto) throws Exception {
 
         if (exchangeDto.getAmountToExchange().compareTo(MIN_ETH_AMOUNT) < 0) {
             throw new InsufficientBalanceException
