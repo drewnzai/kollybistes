@@ -20,6 +20,11 @@ public class EthereumController {
             return ethereumService.createWallet();
     }
 
+    @GetMapping("wallet/balance")
+    public WalletDto getBalance() throws Exception {
+        return ethereumService.getWalletBalance();
+    }
+
     @PostMapping("calculate")
     public TransactionDto calculateTransactionDetails(@RequestBody TransactionDto transactionDto) throws Exception {
             return ethereumService.calculateTransactionDetails(transactionDto.getRecipientAddress()

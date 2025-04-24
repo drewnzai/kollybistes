@@ -145,7 +145,8 @@ public class EthereumService {
         User user = authService.getCurrentUser();
 
         EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
-                .orElseThrow(() -> new Exception("User does not have an Ethereum wallet"));
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User does not have an Ethereum wallet"));
 
         if (ethereumWallet.isTradingLocked()) {
             throw new WalletLockedException("Wallet is currently in a transaction, try again later");
@@ -224,6 +225,28 @@ public class EthereumService {
         txDetails.put("Recipient's TX Hash", toRecipientHash);
 
         return txDetails;
+    }
+
+    public WalletDto getWalletBalance() throws Exception {
+        User user = authService.getCurrentUser();
+
+        EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User does not have an Ethereum wallet"));
+
+        if (ethereumWallet.isTradingLocked()) {
+            throw new WalletLockedException("Wallet is currently in a transaction, try again later");
+        }
+
+        String address = ethereumWallet.getAddress();
+        BigInteger updatedBalanceWei = getBalance(address);
+        BigDecimal updatedBalanceEth = Converter.convertWeiToEth(updatedBalanceWei);
+
+        return WalletDto.builder()
+                .address(address)
+                .balance(ethereumWallet.getBalance())
+                .build();
+
     }
 
     private BigInteger getBalance(String address) throws Exception {
