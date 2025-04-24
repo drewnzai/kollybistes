@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 @Builder
 public class TransactionDto {
     private String recipientAddress;
+    private String senderAddress;
     private FeesDto feesDto;
     private BigDecimal amount;
     private BigDecimal expectedBalance;
