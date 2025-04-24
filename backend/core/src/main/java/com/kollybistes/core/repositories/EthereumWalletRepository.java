@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface EthereumRepository extends JpaRepository<EthereumWallet, Long> {
+public interface EthereumWalletRepository extends JpaRepository<EthereumWallet, Long> {
     Optional<EthereumWallet> findByUser(User user);
 
     boolean existsByUser(User user);

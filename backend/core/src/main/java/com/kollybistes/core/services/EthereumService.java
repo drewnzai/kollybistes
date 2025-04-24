@@ -9,7 +9,7 @@ import com.kollybistes.common.models.User;
 import com.kollybistes.common.util.NotificationEmail;
 import com.kollybistes.core.exceptions.*;
 import com.kollybistes.core.kafka.NotificationProducer;
-import com.kollybistes.core.repositories.EthereumRepository;
+import com.kollybistes.core.repositories.EthereumWalletRepository;
 import com.kollybistes.core.util.Converter;
 import com.kollybistes.core.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,7 @@ public class EthereumService {
 
     private final Web3j web3j;
     private final AuthService authService;
-    private final EthereumRepository ethereumRepository;
+    private final EthereumWalletRepository ethereumWalletRepository;
     private final TransactionService transactionService;
     private final NotificationProducer notificationProducer;
     private final APIHandler apiHandler;
@@ -50,7 +50,7 @@ public class EthereumService {
     public WalletDto createWallet() throws Exception {
         User user = authService.getCurrentUser();
 
-        if (ethereumRepository.existsByUser(user)) {
+        if (ethereumWalletRepository.existsByUser(user)) {
             throw new ResourceAlreadyExistsException("User already has an Ethereum account");
         }
 
@@ -76,7 +76,7 @@ public class EthereumService {
                         .build()
         );
 
-        ethereumRepository.save(ethereumWallet);
+        ethereumWalletRepository.save(ethereumWallet);
 
         return WalletDto.builder()
                 .balance(ethereumWallet.getBalance()) // in wei
@@ -94,7 +94,7 @@ public class EthereumService {
 
         User user = authService.getCurrentUser();
 
-        EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
+        EthereumWallet ethereumWallet = ethereumWalletRepository.findByUser(user)
                 .orElseThrow(
                         () -> new EntityNotFoundException("User does not have an Ethereum wallet")
                 );
@@ -105,7 +105,7 @@ public class EthereumService {
         BigDecimal updatedBalanceEth = Converter.convertWeiToEth(updatedBalanceWei);
 
         ethereumWallet.setBalance(updatedBalanceEth);
-        ethereumRepository.save(ethereumWallet);
+        ethereumWalletRepository.save(ethereumWallet);
 
         BigInteger amountInWei = Converter.convertEthToWei(amountInEth);
 
@@ -144,7 +144,7 @@ public class EthereumService {
 
         User user = authService.getCurrentUser();
 
-        EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
+        EthereumWallet ethereumWallet = ethereumWalletRepository.findByUser(user)
                 .orElseThrow(
                         () -> new EntityNotFoundException("User does not have an Ethereum wallet"));
 
@@ -157,7 +157,7 @@ public class EthereumService {
 
         ethereumWallet.setBalance(updatedBalanceEth);
         ethereumWallet.setTradingLocked(true);
-        ethereumRepository.save(ethereumWallet);
+        ethereumWalletRepository.save(ethereumWallet);
         
         BigInteger gasPriceWei = transactionDto.getFeesDto().getMeasure();
 
@@ -218,7 +218,7 @@ public class EthereumService {
 
         ethereumWallet.setTradingLocked(false);
         ethereumWallet.setBalance(finalBalanceEth);
-        ethereumRepository.save(ethereumWallet);
+        ethereumWalletRepository.save(ethereumWallet);
 
         Map<String, String> txDetails = new HashMap<>();
         txDetails.put("System's TX Hash", toSystemHash);
@@ -230,7 +230,7 @@ public class EthereumService {
     public WalletDto getWalletBalance() throws Exception {
         User user = authService.getCurrentUser();
 
-        EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
+        EthereumWallet ethereumWallet = ethereumWalletRepository.findByUser(user)
                 .orElseThrow(
                         () -> new EntityNotFoundException("User does not have an Ethereum wallet"));
 

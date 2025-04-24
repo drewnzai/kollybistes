@@ -8,7 +8,7 @@ import com.kollybistes.core.mappers.ExchangeMapper;
 import com.kollybistes.core.misc.PaginationRequest;
 import com.kollybistes.core.misc.PagingResult;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
-import com.kollybistes.core.repositories.EthereumRepository;
+import com.kollybistes.core.repositories.EthereumWalletRepository;
 import com.kollybistes.core.repositories.ExchangeRepository;
 import com.kollybistes.core.util.BitcoinRPC;
 import com.kollybistes.core.util.Converter;
@@ -44,7 +44,7 @@ public class ExchangeService {
     private final ExchangeRepository exchangeRepository;
     private final APIHandler apiHandler;
     private final AuthService authService;
-    private final EthereumRepository ethereumRepository;
+    private final EthereumWalletRepository ethereumWalletRepository;
     private final BitcoinWalletRepository bitcoinWalletRepository;
     private final BitcoinRPC bitcoinRPC;
     private final Web3j web3j;
@@ -181,7 +181,7 @@ public class ExchangeService {
 
         User user = authService.getCurrentUser();
 
-        EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
+        EthereumWallet ethereumWallet = ethereumWalletRepository.findByUser(user)
                 .orElseThrow(
                         () -> new EntityNotFoundException("User does not have an Ethereum wallet")
                 );
@@ -190,7 +190,7 @@ public class ExchangeService {
         BigDecimal updatedBalanceEth = Converter.convertWeiToEth(updatedBalanceWei);
 
         ethereumWallet.setBalance(updatedBalanceEth);
-        ethereumRepository.save(ethereumWallet);
+        ethereumWalletRepository.save(ethereumWallet);
 
         BigDecimal amountInEth = exchangeDto.getAmountToExchange();
         BigInteger amountInWei = Converter.convertEthToWei(amountInEth);
@@ -217,7 +217,7 @@ public class ExchangeService {
             + " ETH");
         }
 
-        ethereumRepository.save(ethereumWallet);
+        ethereumWalletRepository.save(ethereumWallet);
 
         return ExchangeDto.builder()
                 .amountToExchange(amountInEth)
@@ -249,7 +249,7 @@ public class ExchangeService {
             throw new WalletLockedException("Wallet is currently in a transaction, try again later");
         }
 
-        EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
+        EthereumWallet ethereumWallet = ethereumWalletRepository.findByUser(user)
                 .orElseThrow(
                         () -> new EntityNotFoundException("User does not have an Ethereum wallet")
                 );
@@ -332,7 +332,7 @@ public class ExchangeService {
                         () -> new EntityNotFoundException("User does not have a Bitcoin wallet")
                 );
 
-        EthereumWallet ethereumWallet = ethereumRepository.findByUser(user)
+        EthereumWallet ethereumWallet = ethereumWalletRepository.findByUser(user)
                 .orElseThrow(
                         () -> new EntityNotFoundException("User does not have an Ethereum wallet")
                 );
@@ -346,7 +346,7 @@ public class ExchangeService {
 
         ethereumWallet.setBalance(updatedBalanceEth);
         ethereumWallet.setTradingLocked(true);
-        ethereumRepository.save(ethereumWallet);
+        ethereumWalletRepository.save(ethereumWallet);
 
         BigInteger gasPriceWei = exchangeDto.getFeesDto().getMeasure();
 
@@ -370,7 +370,7 @@ public class ExchangeService {
         );
 
         ethereumWallet.setTradingLocked(false);
-        ethereumRepository.save(ethereumWallet);
+        ethereumWalletRepository.save(ethereumWallet);
 
         BigInteger feeRate = apiHandler.getRecommendedBitcoinFee();
 
