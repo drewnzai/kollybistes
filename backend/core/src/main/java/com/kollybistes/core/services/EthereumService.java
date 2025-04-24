@@ -135,7 +135,7 @@ public class EthereumService {
                 .build();
     }
 
-    public Object confirmTransactionToOutsideWallet(TransactionDto transactionDto) throws Exception {
+    public Map<String, String> confirmTransactionToOutsideWallet(TransactionDto transactionDto) throws Exception {
 
         if (!ValidationUtil.isValidEthereumAddress(transactionDto.getRecipientAddress())) {
             throw new IllegalFormatException("Invalid Ethereum address: " +
