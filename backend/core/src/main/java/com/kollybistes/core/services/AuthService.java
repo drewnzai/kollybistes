@@ -110,7 +110,7 @@ public class AuthService {
                 );
     }
 
-    public LoginResponse login(LoginRequest loginRequest) throws Exception {
+    public LoginResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(
                 () -> new UsernameNotFoundException("Could not find user")
         );
@@ -136,7 +136,7 @@ public class AuthService {
                 , refreshToken.getToken());
     }
 
-    public LoginResponse refresh(RefreshTokenRequest refreshTokenRequest) throws Exception {
+    public LoginResponse refresh(RefreshTokenRequest refreshTokenRequest) {
 
         User user = userRepository.findByUsername(refreshTokenRequest.getUsername()).orElseThrow(
                 () -> new EntityNotFoundException("Could not find user")
