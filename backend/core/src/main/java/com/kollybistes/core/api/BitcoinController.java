@@ -21,18 +21,18 @@ public class BitcoinController {
     }
 
     @GetMapping("wallet/balance")
-    public WalletDto getBalance() throws Exception {
+    public WalletDto getBalance() {
             return bitcoinService.getWalletBalance();
     }
 
     @PostMapping("calculate")
-    public TransactionDto calculateTransactionDetails(@RequestBody TransactionDto transactionDto) throws Exception {
+    public TransactionDto calculateTransactionDetails(@RequestBody TransactionDto transactionDto) {
             return bitcoinService.calculateTransactionDetails(transactionDto.getRecipientAddress(),
                     transactionDto.getAmount());
     }
 
     @PostMapping("confirm")
-    public Map<String, String> confirmTransaction(@RequestBody TransactionDto transactionDto) throws Exception {
+    public Map<String, String> confirmTransaction(@RequestBody TransactionDto transactionDto) {
             return bitcoinService.confirmTransactionToOutsideWallet(transactionDto);
     }
 

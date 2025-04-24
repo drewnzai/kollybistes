@@ -66,7 +66,7 @@ public class BitcoinService {
                 .build();
     }
 
-    public WalletDto getWalletBalance() throws Exception {
+    public WalletDto getWalletBalance() {
         User user = authService.getCurrentUser();
 
         BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
@@ -83,8 +83,7 @@ public class BitcoinService {
                 .build();
     }
 
-    public TransactionDto calculateTransactionDetails(String recipientAddress, BigDecimal amountBtc)
-            throws Exception {
+    public TransactionDto calculateTransactionDetails(String recipientAddress, BigDecimal amountBtc) {
 
         if(!ValidationUtil.isValidBitcoinAddress(recipientAddress)){
             throw new IllegalFormatException("Invalid Bitcoin address: " + recipientAddress);
@@ -133,7 +132,7 @@ public class BitcoinService {
                 .build();
     }
 
-    public Map<String, String> confirmTransactionToOutsideWallet(TransactionDto transactionDto) throws Exception {
+    public Map<String, String> confirmTransactionToOutsideWallet(TransactionDto transactionDto) {
 
         if(!ValidationUtil.isValidBitcoinAddress(transactionDto.getRecipientAddress())){
             throw new IllegalFormatException("Invalid Bitcoin address: " +
