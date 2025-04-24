@@ -49,7 +49,7 @@ public interface BitcoinApi {
     @Operation(
             summary = "Confirm transaction requirements",
             description = "Confirms a transaction and performs the transaction, " +
-                    "sending BTC to user and outside wallet"
+                    "sending crypto to user and outside wallet"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful transaction"),
