@@ -244,7 +244,7 @@ public class EthereumService {
 
         return WalletDto.builder()
                 .address(address)
-                .balance(ethereumWallet.getBalance())
+                .balance(updatedBalanceEth)
                 .build();
 
     }
