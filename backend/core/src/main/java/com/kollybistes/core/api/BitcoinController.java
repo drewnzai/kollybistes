@@ -20,7 +20,7 @@ public class BitcoinController implements GenericCryptoApi {
 
     @PostMapping("wallet/create")
     @Override
-    public ResponseEntity<WalletDto> createWallet() throws Exception {
+    public ResponseEntity<WalletDto> createWallet() {
             return new ResponseEntity<>(bitcoinService.createWallet(), HttpStatus.CREATED);
     }
 

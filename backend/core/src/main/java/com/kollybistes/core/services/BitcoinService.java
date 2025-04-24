@@ -38,7 +38,7 @@ public class BitcoinService {
 
     private static final BigDecimal TRANSACTION_FEE_PERCENT = new BigDecimal("0.15");
 
-    public WalletDto createWallet() throws Exception {
+    public WalletDto createWallet() {
         User user = authService.getCurrentUser();
 
         if (bitcoinWalletRepository.existsByUser(user)) {

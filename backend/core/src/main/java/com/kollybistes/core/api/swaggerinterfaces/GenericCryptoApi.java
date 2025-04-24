@@ -22,7 +22,7 @@ public interface GenericCryptoApi {
             @ApiResponse(responseCode = "201", description = "successful Crypto Wallet creation"),
             @ApiResponse(responseCode = "400", description = "could not create account")
     })
-    ResponseEntity<WalletDto> createWallet() throws Exception;
+    ResponseEntity<WalletDto> createWallet();
 
     @Operation(
             summary = "Sign up a new user",
