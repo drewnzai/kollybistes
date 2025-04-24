@@ -21,9 +21,9 @@ public class TransactionController implements TransactionApi {
 
     private final TransactionService transactionService;
 
-    @GetMapping
+    @GetMapping("bitcoin")
     @Override
-    public ResponseEntity<PagingResult<TransactionDto>> getTransactions(
+    public ResponseEntity<PagingResult<TransactionDto>> getBitcoinTransactions(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
             @RequestParam(required = false) String sortField,
@@ -32,7 +32,22 @@ public class TransactionController implements TransactionApi {
         final PaginationRequest paginationRequest = new PaginationRequest(page, size, sortField, direction);
 
         return new ResponseEntity<>(transactionService
-                .getTransactions(paginationRequest),
+                .getBitcoinTransactions(paginationRequest),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("ethereum")
+    @Override
+    public ResponseEntity<PagingResult<TransactionDto>> getEthereumTransactions(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) Sort.Direction direction
+    ){
+        final PaginationRequest paginationRequest = new PaginationRequest(page, size, sortField, direction);
+
+        return new ResponseEntity<>(transactionService
+                .getBitcoinTransactions(paginationRequest),
                 HttpStatus.OK);
     }
 }

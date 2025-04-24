@@ -1,11 +1,16 @@
 package com.kollybistes.core.services;
 
 import com.kollybistes.common.dtos.TransactionDto;
+import com.kollybistes.common.models.BitcoinWallet;
+import com.kollybistes.common.models.EthereumWallet;
 import com.kollybistes.common.models.Transaction;
 import com.kollybistes.common.models.User;
+import com.kollybistes.core.exceptions.EntityNotFoundException;
 import com.kollybistes.core.mappers.TransactionMapper;
 import com.kollybistes.core.misc.PaginationRequest;
 import com.kollybistes.core.misc.PagingResult;
+import com.kollybistes.core.repositories.BitcoinWalletRepository;
+import com.kollybistes.core.repositories.EthereumWalletRepository;
 import com.kollybistes.core.repositories.TransactionRepository;
 import com.kollybistes.core.util.PaginationUtil;
 import lombok.AllArgsConstructor;
@@ -23,6 +28,8 @@ import java.util.List;
 @AllArgsConstructor
 public class TransactionService {
     private final TransactionRepository transactionRepository;
+    private final BitcoinWalletRepository bitcoinWalletRepository;
+    private final EthereumWalletRepository ethereumWalletRepository;
     private final TransactionMapper transactionMapper;
     private final AuthService authService;
 
@@ -43,22 +50,53 @@ public class TransactionService {
         transactionRepository.save(transaction);
     }
 
-    public PagingResult<TransactionDto> getTransactions(PaginationRequest paginationRequest){
+    public PagingResult<TransactionDto> getBitcoinTransactions(PaginationRequest paginationRequest){
         User user = authService.getCurrentUser();
+
+        BitcoinWallet bitcoinWallet = bitcoinWalletRepository.findByUser(user)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User does not have a Bitcoin wallet")
+                );
         
         final Pageable pageable = PaginationUtil.getPageable(paginationRequest);
-        Page<Transaction> userTransactions = transactionRepository.findAllByUser(user, pageable);
-        List<TransactionDto> transactions = userTransactions
+        Page<Transaction> bitcoinTransactions = transactionRepository.findAllBySenderAddress(bitcoinWallet.getAddress(),
+                pageable);
+        List<TransactionDto> transactions = bitcoinTransactions
                 .stream()
                 .map(transactionMapper::transactionToTransactionDto).toList();
 
         return new PagingResult<>(
                 transactions,
-                userTransactions.getTotalPages(),
-                userTransactions.getTotalElements(),
-                userTransactions.getSize(),
-                userTransactions.getNumber(),
-                userTransactions.isEmpty()
+                bitcoinTransactions.getTotalPages(),
+                bitcoinTransactions.getTotalElements(),
+                bitcoinTransactions.getSize(),
+                bitcoinTransactions.getNumber(),
+                bitcoinTransactions.isEmpty()
+        );
+    }
+
+    public PagingResult<TransactionDto> getEthereumTransactions(PaginationRequest paginationRequest){
+        User user = authService.getCurrentUser();
+
+        EthereumWallet ethereumWallet = ethereumWalletRepository.findByUser(user)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User does not have an Ethereum wallet")
+                );
+
+        final Pageable pageable = PaginationUtil.getPageable(paginationRequest);
+        Page<Transaction> ethereumTransactions = transactionRepository.findAllBySenderAddress(ethereumWallet.getAddress(),
+                pageable);
+        List<TransactionDto> transactions = ethereumTransactions
+                .stream()
+                .map(transactionMapper::transactionToTransactionDto).toList();
+
+        return new PagingResult<>(
+                transactions,
+                ethereumTransactions.getTotalPages(),
+                ethereumTransactions.getTotalElements(),
+                ethereumTransactions.getSize(),
+                ethereumTransactions.getNumber(),
+                ethereumTransactions.isEmpty()
         );
     }
 }

@@ -14,14 +14,29 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface TransactionApi {
 
     @Operation(
-            summary = "Get All Transactions",
-            description = "Gets all transactions by a given user"
+            summary = "Get All BitcoinTransactions",
+            description = "Gets all transactions by a given Bitcoin wallet"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful transactions acquisition"),
             @ApiResponse(responseCode = "404", description = "could not get transactions")
     })
-    ResponseEntity<PagingResult<TransactionDto>> getTransactions(
+    ResponseEntity<PagingResult<TransactionDto>> getBitcoinTransactions(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) Sort.Direction direction
+    );
+
+    @Operation(
+            summary = "Get All Ethereum Transactions",
+            description = "Gets all transactions by a given Ethereum wallet"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful transactions acquisition"),
+            @ApiResponse(responseCode = "404", description = "could not get transactions")
+    })
+    ResponseEntity<PagingResult<TransactionDto>> getEthereumTransactions(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
             @RequestParam(required = false) String sortField,
