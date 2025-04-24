@@ -26,6 +26,9 @@ public class Exchange {
     private ExchangeType exchangeType; // BUY or SELL (BTC <-> ETH)
 
     @ManyToOne
+    private User user;
+
+    @ManyToOne
     private BitcoinWallet bitcoinWallet; // BTC wallet used in the trade
 
     @ManyToOne

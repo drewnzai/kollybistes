@@ -6,7 +6,6 @@ import com.kollybistes.common.models.EthereumWallet;
 import com.kollybistes.common.models.Transaction;
 import com.kollybistes.common.models.User;
 import com.kollybistes.core.exceptions.EntityNotFoundException;
-import com.kollybistes.core.mappers.TransactionMapper;
 import com.kollybistes.core.misc.PaginationRequest;
 import com.kollybistes.core.misc.PagingResult;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
@@ -30,7 +29,6 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final BitcoinWalletRepository bitcoinWalletRepository;
     private final EthereumWalletRepository ethereumWalletRepository;
-    private final TransactionMapper transactionMapper;
     private final AuthService authService;
 
     @Async
@@ -63,7 +61,7 @@ public class TransactionService {
                 pageable);
         List<TransactionDto> transactions = bitcoinTransactions
                 .stream()
-                .map(transactionMapper::transactionToTransactionDto).toList();
+                .map(this::mapTransactionToTransactionDto).toList();
 
         return new PagingResult<>(
                 transactions,
@@ -88,7 +86,7 @@ public class TransactionService {
                 pageable);
         List<TransactionDto> transactions = ethereumTransactions
                 .stream()
-                .map(transactionMapper::transactionToTransactionDto).toList();
+                .map(this::mapTransactionToTransactionDto).toList();
 
         return new PagingResult<>(
                 transactions,
@@ -98,5 +96,15 @@ public class TransactionService {
                 ethereumTransactions.getNumber(),
                 ethereumTransactions.isEmpty()
         );
+    }
+
+    private TransactionDto mapTransactionToTransactionDto(Transaction transaction){
+        return TransactionDto.builder()
+                .senderAddress(transaction.getSenderAddress())
+                .amount(transaction.getAmount())
+                .createdAt(transaction.getCreatedAt())
+                .transactionHash(transaction.getTransactionHash())
+                .recipientAddress(transaction.getRecipientAddress())
+                .build();
     }
 }

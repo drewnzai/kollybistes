@@ -32,7 +32,6 @@ public class SecurityConfig {
         http.cors(c -> c.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request.antMatchers("/api/auth/**").permitAll()
-                        .antMatchers("/api/exchange/**").permitAll()
                         .antMatchers("/v3/api-docs/**").permitAll()
                         .antMatchers("/swagger-ui.html").permitAll()
                         .antMatchers("/swagger-ui/**").permitAll()

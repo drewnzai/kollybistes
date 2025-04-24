@@ -4,7 +4,6 @@ import com.kollybistes.common.dtos.ExchangeDto;
 import com.kollybistes.common.dtos.FeesDto;
 import com.kollybistes.common.models.*;
 import com.kollybistes.core.exceptions.*;
-import com.kollybistes.core.mappers.ExchangeMapper;
 import com.kollybistes.core.misc.PaginationRequest;
 import com.kollybistes.core.misc.PagingResult;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
@@ -49,7 +48,6 @@ public class ExchangeService {
     private final BitcoinWalletRepository bitcoinWalletRepository;
     private final BitcoinRPC bitcoinRPC;
     private final Web3j web3j;
-    private final ExchangeMapper exchangeMapper;
 
     @Value("${system.btc.address}")
     private String systemBtcAddress;
@@ -102,7 +100,7 @@ public class ExchangeService {
         final Page<Exchange> userExchanges = exchangeRepository.findAllByUser(user, pageable);
         List<ExchangeDto> exchanges = userExchanges
                 .stream()
-                .map(exchangeMapper::exchangeToExchangeDto).toList();
+                .map(this::mapExchangeToExchangeDto).toList();
 
         return new PagingResult<>(
                 exchanges,
@@ -302,6 +300,7 @@ public class ExchangeService {
                 .amountGiven(exchangeDto.getAmountToExchange())
                 .amountGotten(exchangeDto.getExpectedAmountGotten())
                 .status(ExchangeStatus.COMPLETED)
+                .user(user)
                 .bitcoinWallet(bitcoinWallet)
                 .ethereumWallet(ethereumWallet)
                 .transactionFee(exchangeDto.getFeesDto().getTransactionFee())
@@ -390,6 +389,7 @@ public class ExchangeService {
                 .amountGiven(exchangeDto.getAmountToExchange())
                 .amountGotten(exchangeDto.getExpectedAmountGotten())
                 .status(ExchangeStatus.COMPLETED)
+                .user(user)
                 .bitcoinWallet(bitcoinWallet)
                 .ethereumWallet(ethereumWallet)
                 .transactionFee(exchangeDto.getFeesDto().getTransactionFee())
@@ -447,5 +447,13 @@ public class ExchangeService {
         EthGetBalance balance = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
         return balance.getBalance(); // in wei
     }
-    
+
+    private ExchangeDto mapExchangeToExchangeDto(Exchange exchange){
+        return ExchangeDto.builder()
+                .amountToExchange(exchange.getAmountGiven())
+                .exchangeType(exchange.getExchangeType().name())
+                .expectedAmountGotten(exchange.getAmountGotten())
+                .rate(exchange.getExchangeRate())
+                .build();
+    }
 }
