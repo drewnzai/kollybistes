@@ -1,0 +1,33 @@
+package com.kollybistes.core.api;
+
+import com.kollybistes.common.dtos.TransactionDto;
+import com.kollybistes.core.misc.PaginationRequest;
+import com.kollybistes.core.misc.PagingResult;
+import com.kollybistes.core.services.TransactionService;
+import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/transactions/")
+@AllArgsConstructor
+public class TransactionController {
+
+    private final TransactionService transactionService;
+
+    @GetMapping
+    public PagingResult<TransactionDto> getTransactions(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sortField,
+            @RequestParam(required = false) Sort.Direction direction
+    ){
+        final PaginationRequest paginationRequest = new PaginationRequest(page, size, sortField, direction);
+
+        return transactionService
+                .getTransactions(paginationRequest);
+    }
+}
