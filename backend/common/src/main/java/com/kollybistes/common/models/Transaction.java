@@ -20,8 +20,9 @@ public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String senderAddress;
+    private User user;
     private String recipientAddress;
+    @Column(precision = 36, scale = 18)
     private BigDecimal amount;
     private String transactionHash;
     @CreationTimestamp
