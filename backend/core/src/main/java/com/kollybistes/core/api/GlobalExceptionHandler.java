@@ -46,6 +46,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler({
+            UserNotVerifiedException.class
+    })
+    public ResponseEntity<ErrorResponse> handleUserNotVerified(UserNotVerifiedException e){
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpectedExceptions(Exception e) {
         e.printStackTrace(); // Prints the full stack trace to the console for debugging

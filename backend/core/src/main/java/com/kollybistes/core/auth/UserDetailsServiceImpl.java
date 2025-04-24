@@ -26,7 +26,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if(!user.isEnabled()){
             throw new UserNotVerifiedException("User is not verified. Please check email and verify");
         }
-        
+
         return new UserDetailsImpl(user);
     }
 
