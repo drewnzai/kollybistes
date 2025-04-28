@@ -26,7 +26,7 @@ public class TransactionService {
     private final BitcoinWalletRepository bitcoinWalletRepository;
     private final EthereumWalletRepository ethereumWalletRepository;
     private final AuthService authService;
-    
+
     public PagingResult<TransactionDto> getBitcoinTransactions(PaginationRequest paginationRequest){
         User user = authService.getCurrentUser();
 

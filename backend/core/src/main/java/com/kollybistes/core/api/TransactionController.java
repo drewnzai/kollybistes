@@ -47,7 +47,7 @@ public class TransactionController implements TransactionApi {
         final PaginationRequest paginationRequest = new PaginationRequest(page, size, sortField, direction);
 
         return new ResponseEntity<>(transactionService
-                .getBitcoinTransactions(paginationRequest),
+                .getEthereumTransactions(paginationRequest),
                 HttpStatus.OK);
     }
 }
