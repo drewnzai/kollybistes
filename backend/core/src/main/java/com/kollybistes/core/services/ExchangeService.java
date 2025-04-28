@@ -17,8 +17,11 @@ import com.kollybistes.core.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.web3j.crypto.Credentials;
@@ -97,6 +100,11 @@ public class ExchangeService {
         }
     }
 
+    @Cacheable(value = "exchanges",
+            key = "#paginationRequest.page + '-' + " +
+                    "#paginationRequest.size + '-' + " +
+                    "T(org.springframework.security.core.context.SecurityContextHolder)." +
+                    "getContext().getAuthentication().getName()")
     public PagingResult<ExchangeDto> getExchanges(PaginationRequest paginationRequest){
         User user = authService.getCurrentUser();
 
@@ -114,6 +122,15 @@ public class ExchangeService {
                 userExchanges.getNumber(),
                 userExchanges.isEmpty()
         );
+    }
+
+    @CachePut(value = "exchanges",
+            key = "#paginationRequest.page + '-' + " +
+                    "#paginationRequest.size + '-' + " +
+                    "T(org.springframework.security.core.context.SecurityContextHolder)." +
+                    "getContext().getAuthentication().getName()")
+    public PagingResult<ExchangeDto> refreshExchanges(PaginationRequest paginationRequest) {
+        return getExchanges(paginationRequest);
     }
 
     private ExchangeDto calculateBtcToEth(ExchangeDto exchangeDto) {
@@ -322,6 +339,13 @@ public class ExchangeService {
 
         exchangeRepository.save(exchange);
 
+        refreshExchanges(
+                new PaginationRequest(0,
+                10,
+                "id",
+                Sort.Direction.DESC)
+        );
+
         notificationProducer.sendMail(
                 NotificationEmail.builder()
                         .recipient(user.getEmail())
@@ -433,6 +457,13 @@ public class ExchangeService {
 
         exchangeRepository.save(exchange);
 
+        refreshExchanges(
+                new PaginationRequest(0,
+                        10,
+                        "id",
+                        Sort.Direction.DESC)
+        );
+        
         notificationProducer.sendMail(
                 NotificationEmail.builder()
                         .recipient(user.getEmail())
