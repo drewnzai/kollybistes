@@ -5,22 +5,26 @@ import com.kollybistes.common.dtos.FeesDto;
 import com.kollybistes.common.dtos.TransactionDto;
 import com.kollybistes.common.dtos.WalletDto;
 import com.kollybistes.common.models.BitcoinWallet;
+import com.kollybistes.common.models.Transaction;
 import com.kollybistes.common.models.User;
 import com.kollybistes.common.util.NotificationEmail;
 import com.kollybistes.core.exceptions.*;
+import com.kollybistes.core.exceptions.IllegalFormatException;
 import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
+import com.kollybistes.core.repositories.TransactionRepository;
 import com.kollybistes.core.util.BitcoinRPC;
 import com.kollybistes.core.util.Converter;
 import com.kollybistes.core.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.Instant;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +34,7 @@ public class BitcoinService {
     private final AuthService authService;
     private final BitcoinRPC bitcoinRPC;
     private final APIHandler apiHandler;
-    private final TransactionService transactionService;
+    private final TransactionRepository transactionRepository;
     private final NotificationProducer notificationProducer;
 
     @Value("${system.btc.address}")
@@ -132,6 +136,7 @@ public class BitcoinService {
                 .build();
     }
 
+    @Transactional
     public Map<String, String> confirmTransactionToOutsideWallet(TransactionDto transactionDto) {
 
         if(!ValidationUtil.isValidBitcoinAddress(transactionDto.getRecipientAddress())){
@@ -155,8 +160,6 @@ public class BitcoinService {
 
         bitcoinWallet.setTradingLocked(true);
         bitcoinWallet.setBalance(updatedBalanceBtc);
-
-
         bitcoinWalletRepository.save(bitcoinWallet);
 
         BigDecimal totalFeesBtc = transactionDto
@@ -182,12 +185,17 @@ public class BitcoinService {
                 satvBFeeRate
         );
 
-        transactionService.saveTransaction(
-                bitcoinWallet.getAddress(),
-                systemAddress,
-                systemFeeBtc,
-                toSystemHash
-        );
+        List<Transaction> transactions = new ArrayList<>();
+
+        Transaction toSystemTransaction = Transaction.builder()
+                .transactionHash(toSystemHash)
+                .senderAddress(bitcoinWallet.getAddress())
+                .recipientAddress(systemAddress)
+                .amount(systemFeeBtc)
+                .createdAt(Date.from(Instant.now()))
+                .build();
+
+        transactions.add(toSystemTransaction);
 
         BigDecimal transactionAmountBtc = transactionDto.getAmount();
         BigInteger transactionAmountSats = Converter.convertBtcToSats(transactionAmountBtc);
@@ -199,12 +207,16 @@ public class BitcoinService {
                 satvBFeeRate
         );
 
-        transactionService.saveTransaction(
-                bitcoinWallet.getAddress(),
-                transactionDto.getRecipientAddress(),
-                transactionAmountBtc,
-                toRecipientHash
-        );
+        Transaction toRecipientTransaction = Transaction.builder()
+                .transactionHash(toRecipientHash)
+                .recipientAddress(transactionDto.getRecipientAddress())
+                .senderAddress(bitcoinWallet.getAddress())
+                .amount(transactionAmountBtc)
+                .createdAt(Date.from(Instant.now()))
+                .build();
+
+        transactions.add(toRecipientTransaction);
+        transactionRepository.saveAll(transactions);
 
         bitcoinWallet.setBalance(bitcoinRPC.updateBalance(bitcoinWallet));
         bitcoinWallet.setTradingLocked(false);

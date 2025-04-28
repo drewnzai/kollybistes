@@ -15,12 +15,8 @@ import com.kollybistes.core.util.PaginationUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -30,24 +26,7 @@ public class TransactionService {
     private final BitcoinWalletRepository bitcoinWalletRepository;
     private final EthereumWalletRepository ethereumWalletRepository;
     private final AuthService authService;
-
-    @Async
-    public void saveTransaction(String sender,
-                                String recipient,
-                                BigDecimal amount,
-                                String txHash){
-        
-        Transaction transaction = Transaction.builder()
-                .senderAddress(sender)
-                .recipientAddress(recipient)
-                .amount(amount)
-                .transactionHash(txHash)
-                .createdAt(Date.from(Instant.now()))
-                .build();
-
-        transactionRepository.save(transaction);
-    }
-
+    
     public PagingResult<TransactionDto> getBitcoinTransactions(PaginationRequest paginationRequest){
         User user = authService.getCurrentUser();
 

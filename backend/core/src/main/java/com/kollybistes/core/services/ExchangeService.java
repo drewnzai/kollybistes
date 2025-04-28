@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.crypto.WalletUtils;
@@ -231,6 +232,7 @@ public class ExchangeService {
                 .build();
     }
 
+    @Transactional
     private Map<String, String> confirmBtcToEth(ExchangeDto exchangeDto) {
 
         if (exchangeDto.getAmountToExchange().compareTo(MIN_BTC_AMOUNT) < 0) {
@@ -318,6 +320,7 @@ public class ExchangeService {
         return txHashes;
     }
 
+    @Transactional
     private Map<String, String> confirmEthToBtc(ExchangeDto exchangeDto) {
 
         if (exchangeDto.getAmountToExchange().compareTo(MIN_ETH_AMOUNT) < 0) {
