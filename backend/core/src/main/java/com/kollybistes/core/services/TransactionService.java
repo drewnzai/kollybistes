@@ -13,10 +13,13 @@ import com.kollybistes.core.repositories.EthereumWalletRepository;
 import com.kollybistes.core.repositories.TransactionRepository;
 import com.kollybistes.core.util.PaginationUtil;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -86,6 +89,40 @@ public class TransactionService {
                 ethereumTransactions.getNumber(),
                 ethereumTransactions.isEmpty()
         );
+    }
+
+    @CachePut(value = "bitcoinTransactions",
+            key = "'0-' + '10-' + " +
+                    "T(org.springframework.security.core.context.SecurityContextHolder)" +
+                    ".getContext().getAuthentication().getName()")
+    public PagingResult<TransactionDto> updateBitcoinTransactionsCacheAfterNewTransaction() {
+        PaginationRequest paginationRequest = new PaginationRequest(0,
+                10,
+                "id",
+                Sort.Direction.DESC); // Page 0, size 10
+        return getBitcoinTransactions(paginationRequest);
+    }
+
+    @CachePut(value = "ethereumTransactions", key = "'0-' + '10-' + " +
+            "T(org.springframework.security.core.context.SecurityContextHolder)" +
+            ".getContext().getAuthentication().getName()")
+    public PagingResult<TransactionDto> updateEthereumTransactionsCacheAfterNewTransaction() {
+        PaginationRequest paginationRequest = new PaginationRequest(0,
+                10,
+                "id",
+                Sort.Direction.DESC); // Page 0, size 10
+        return getEthereumTransactions(paginationRequest);
+    }
+
+    @Transactional
+    public void createTransaction(Transaction transaction, boolean isBitcoin) {
+        Transaction savedTransaction = transactionRepository.save(transaction);
+
+        if (isBitcoin) {
+            updateBitcoinTransactionsCacheAfterNewTransaction();
+        } else {
+            updateEthereumTransactionsCacheAfterNewTransaction();
+        }
     }
 
     private TransactionDto mapTransactionToTransactionDto(Transaction transaction){

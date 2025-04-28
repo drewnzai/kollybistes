@@ -9,10 +9,8 @@ import com.kollybistes.common.models.Transaction;
 import com.kollybistes.common.models.User;
 import com.kollybistes.common.util.NotificationEmail;
 import com.kollybistes.core.exceptions.*;
-import com.kollybistes.core.exceptions.IllegalFormatException;
 import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.EthereumWalletRepository;
-import com.kollybistes.core.repositories.TransactionRepository;
 import com.kollybistes.core.util.Converter;
 import com.kollybistes.core.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +27,9 @@ import org.web3j.tx.RawTransactionManager;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +38,7 @@ public class EthereumService {
     private final Web3j web3j;
     private final AuthService authService;
     private final EthereumWalletRepository ethereumWalletRepository;
-    private final TransactionRepository transactionRepository;
+    private final TransactionService transactionService;
     private final NotificationProducer notificationProducer;
     private final APIHandler apiHandler;
 
@@ -193,8 +193,6 @@ public class EthereumService {
 
         String toSystemHash = txManager.signAndSend(toSystem).getTransactionHash();
 
-        List<Transaction> transactions = new ArrayList<>();
-
         Transaction toSystemTransaction = Transaction.builder()
                 .transactionHash(toSystemHash)
                 .senderAddress(ethereumWallet.getAddress())
@@ -203,7 +201,7 @@ public class EthereumService {
                 .createdAt(Date.from(Instant.now()))
                 .build();
 
-        transactions.add(toSystemTransaction);
+        transactionService.createTransaction(toSystemTransaction, false);
 
         nonce = nonce.add(BigInteger.ONE);
 
@@ -224,8 +222,7 @@ public class EthereumService {
                 .createdAt(Date.from(Instant.now()))
                 .build();
 
-        transactions.add(toRecipientTransaction);
-        transactionRepository.saveAll(transactions);
+        transactionService.createTransaction(toRecipientTransaction, false);
 
         BigInteger finalBalanceWei = getBalance(ethereumWallet.getAddress());
         BigDecimal finalBalanceEth = Converter.convertWeiToEth(finalBalanceWei);

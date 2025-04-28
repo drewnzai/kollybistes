@@ -9,10 +9,8 @@ import com.kollybistes.common.models.Transaction;
 import com.kollybistes.common.models.User;
 import com.kollybistes.common.util.NotificationEmail;
 import com.kollybistes.core.exceptions.*;
-import com.kollybistes.core.exceptions.IllegalFormatException;
 import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
-import com.kollybistes.core.repositories.TransactionRepository;
 import com.kollybistes.core.util.BitcoinRPC;
 import com.kollybistes.core.util.Converter;
 import com.kollybistes.core.util.ValidationUtil;
@@ -24,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +34,7 @@ public class BitcoinService {
     private final AuthService authService;
     private final BitcoinRPC bitcoinRPC;
     private final APIHandler apiHandler;
-    private final TransactionRepository transactionRepository;
+    private final TransactionService transactionService;
     private final NotificationProducer notificationProducer;
 
     @Value("${system.btc.address}")
@@ -186,8 +186,6 @@ public class BitcoinService {
                 satvBFeeRate
         );
 
-        List<Transaction> transactions = new ArrayList<>();
-
         Transaction toSystemTransaction = Transaction.builder()
                 .transactionHash(toSystemHash)
                 .senderAddress(bitcoinWallet.getAddress())
@@ -196,7 +194,7 @@ public class BitcoinService {
                 .createdAt(Date.from(Instant.now()))
                 .build();
 
-        transactions.add(toSystemTransaction);
+        transactionService.createTransaction(toSystemTransaction, true);
 
         BigDecimal transactionAmountBtc = transactionDto.getAmount();
         BigInteger transactionAmountSats = Converter.convertBtcToSats(transactionAmountBtc);
@@ -216,8 +214,7 @@ public class BitcoinService {
                 .createdAt(Date.from(Instant.now()))
                 .build();
 
-        transactions.add(toRecipientTransaction);
-        transactionRepository.saveAll(transactions);
+        transactionService.createTransaction(toRecipientTransaction, true);
 
         BigDecimal finalBalanceBtc = bitcoinRPC.updateBalance(bitcoinWallet);
         bitcoinWallet.setBalance(finalBalanceBtc);
