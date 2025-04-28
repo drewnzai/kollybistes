@@ -12,7 +12,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @ComponentScan(basePackages = {"com.kollybistes.core"})
 @EntityScan(basePackages = {"com.kollybistes.common.models"})
 @EnableJpaRepositories(basePackages = "com.kollybistes.core.repositories")
-@EnableCaching
 @EnableAsync
 public class CoreApplication {
     public static void main(String[] args) {
