@@ -20,8 +20,7 @@ public interface AuthApi {
             description = "Signs up a user after performing necessary checks"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successful account creation"),
-            @ApiResponse(responseCode = "400", description = "could not create account")
+            @ApiResponse(responseCode = "201", description = "successful account creation")
     })
     ResponseEntity<String> signup(@RequestBody RegisterRequest registerRequest);
 
@@ -30,8 +29,7 @@ public interface AuthApi {
             description = "Verifies a user's verification token to enable their account"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful account verification"),
-            @ApiResponse(responseCode = "404", description = "could not verify account")
+            @ApiResponse(responseCode = "200", description = "successful account verification")
     })
     ResponseEntity<String> verifyAccount(@PathVariable String token);
 
@@ -40,9 +38,7 @@ public interface AuthApi {
             description = "Authenticate a user's credentials"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful login"),
-            @ApiResponse(responseCode = "401", description = "bad credentials"),
-            @ApiResponse(responseCode = "404", description = "user does not exist")
+            @ApiResponse(responseCode = "200", description = "successful login")
     })
     ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest);
 
@@ -51,9 +47,7 @@ public interface AuthApi {
             description = "Refreshes a user's JWT"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful refresh"),
-            @ApiResponse(responseCode = "400", description = "malformed token"),
-            @ApiResponse(responseCode = "404", description = "refresh token or user does not exist")
+            @ApiResponse(responseCode = "200", description = "successful refresh")
     })
     ResponseEntity<LoginResponse> refresh(@RequestBody RefreshTokenRequest refreshTokenRequest);
 }

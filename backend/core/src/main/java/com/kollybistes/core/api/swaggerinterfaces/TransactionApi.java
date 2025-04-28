@@ -18,8 +18,7 @@ public interface TransactionApi {
             description = "Gets all transactions by a given Bitcoin wallet"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful transactions acquisition"),
-            @ApiResponse(responseCode = "404", description = "could not get transactions")
+            @ApiResponse(responseCode = "200", description = "successful transactions acquisition")
     })
     ResponseEntity<PagingResult<TransactionDto>> getBitcoinTransactions(
             @RequestParam(required = false) Integer page,
@@ -33,8 +32,7 @@ public interface TransactionApi {
             description = "Gets all transactions by a given Ethereum wallet"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful transactions acquisition"),
-            @ApiResponse(responseCode = "404", description = "could not get transactions")
+            @ApiResponse(responseCode = "200", description = "successful transactions acquisition")
     })
     ResponseEntity<PagingResult<TransactionDto>> getEthereumTransactions(
             @RequestParam(required = false) Integer page,

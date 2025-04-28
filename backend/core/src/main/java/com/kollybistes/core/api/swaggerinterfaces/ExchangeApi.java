@@ -21,8 +21,7 @@ public interface ExchangeApi {
             description = "Gets all exchanges by a given user"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful exchanges acquisition"),
-            @ApiResponse(responseCode = "404", description = "could not get exchanges")
+            @ApiResponse(responseCode = "200", description = "successful exchanges acquisition")
     })
     ResponseEntity<PagingResult<ExchangeDto>> getExchanges(
             @RequestParam(required = false) Integer page,
@@ -37,9 +36,7 @@ public interface ExchangeApi {
                     "before confirmation"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful requirements acquisition"),
-            @ApiResponse(responseCode = "400", description = "could not get requirements"),
-            @ApiResponse(responseCode = "404", description = "wallet not found")
+            @ApiResponse(responseCode = "200", description = "successful requirements acquisition")
     })
     ResponseEntity<ExchangeDto> calculateExchangeDetails(@RequestBody ExchangeDto exchangeDto);
 
@@ -49,9 +46,7 @@ public interface ExchangeApi {
                     "sending crypto to user and outside wallet"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful exchange"),
-            @ApiResponse(responseCode = "400", description = "could not fulfill exchange"),
-            @ApiResponse(responseCode = "404", description = "wallet not found")
+            @ApiResponse(responseCode = "200", description = "successful exchange")
     })
     ResponseEntity<Map<String, String>> confirmExchange(@RequestBody ExchangeDto exchangeDto);
 }

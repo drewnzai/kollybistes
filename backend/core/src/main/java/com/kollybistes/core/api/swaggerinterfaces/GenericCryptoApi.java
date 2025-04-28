@@ -19,8 +19,7 @@ public interface GenericCryptoApi {
             description = "Creates a Crypto Wallet for a user"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successful Crypto Wallet creation"),
-            @ApiResponse(responseCode = "400", description = "could not create account")
+            @ApiResponse(responseCode = "201", description = "successful Crypto Wallet creation")
     })
     ResponseEntity<WalletDto> createWallet();
 
@@ -29,9 +28,7 @@ public interface GenericCryptoApi {
             description = "Gets the balance currently held in a user's wallet"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful balance acquisition"),
-            @ApiResponse(responseCode = "400", description = "could not get the balance"),
-            @ApiResponse(responseCode = "404", description = "wallet does not exist or is currently locked")
+            @ApiResponse(responseCode = "200", description = "successful balance acquisition")
     })
     ResponseEntity<WalletDto> getBalance();
 
@@ -41,9 +38,7 @@ public interface GenericCryptoApi {
                     "before confirmation"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful requirements acquisition"),
-            @ApiResponse(responseCode = "400", description = "could not get requirements"),
-            @ApiResponse(responseCode = "404", description = "wallet not found")
+            @ApiResponse(responseCode = "200", description = "successful requirements acquisition")
     })
     ResponseEntity<TransactionDto> calculateTransactionDetails(@RequestBody TransactionDto transactionDto);
 
@@ -53,9 +48,7 @@ public interface GenericCryptoApi {
                     "sending crypto to user and outside wallet"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful transaction"),
-            @ApiResponse(responseCode = "400", description = "could not fulfill transaction"),
-            @ApiResponse(responseCode = "404", description = "wallet not found")
+            @ApiResponse(responseCode = "200", description = "successful transaction")
     })
     ResponseEntity<Map<String, String>> confirmTransaction(@RequestBody TransactionDto transactionDto);
 }
