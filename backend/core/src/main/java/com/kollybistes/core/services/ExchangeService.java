@@ -463,7 +463,7 @@ public class ExchangeService {
                         "id",
                         Sort.Direction.DESC)
         );
-        
+
         notificationProducer.sendMail(
                 NotificationEmail.builder()
                         .recipient(user.getEmail())
