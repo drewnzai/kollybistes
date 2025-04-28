@@ -13,6 +13,7 @@ import com.kollybistes.core.repositories.EthereumWalletRepository;
 import com.kollybistes.core.repositories.TransactionRepository;
 import com.kollybistes.core.util.PaginationUtil;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,11 @@ public class TransactionService {
     private final EthereumWalletRepository ethereumWalletRepository;
     private final AuthService authService;
 
+    @Cacheable(value = "bitcoinTransactions",
+            key = "#paginationRequest.page + '-' + " +
+                    "#paginationRequest.size + '-' + " +
+                    "T(org.springframework.security.core.context.SecurityContextHolder)." +
+                    "getContext().getAuthentication().getName()")
     public PagingResult<TransactionDto> getBitcoinTransactions(PaginationRequest paginationRequest){
         User user = authService.getCurrentUser();
 
@@ -52,6 +58,11 @@ public class TransactionService {
         );
     }
 
+    @Cacheable(value = "ethereumTransactions",
+            key = "#paginationRequest.page + '-' + " +
+                    "#paginationRequest.size + '-' + " +
+                    "T(org.springframework.security.core.context.SecurityContextHolder)." +
+                    "getContext().getAuthentication().getName()")
     public PagingResult<TransactionDto> getEthereumTransactions(PaginationRequest paginationRequest){
         User user = authService.getCurrentUser();
 
