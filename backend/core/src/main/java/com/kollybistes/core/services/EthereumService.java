@@ -16,6 +16,7 @@ import com.kollybistes.core.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.web3j.crypto.*;
@@ -251,6 +252,10 @@ public class EthereumService {
         return txDetails;
     }
 
+    @Cacheable(
+            value = "ethereum-balances",
+            key = "#root.authentication.name"
+    )
     public WalletDto getWalletBalance() {
         User user = authService.getCurrentUser();
 

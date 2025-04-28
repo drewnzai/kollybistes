@@ -16,6 +16,7 @@ import com.kollybistes.core.util.Converter;
 import com.kollybistes.core.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,6 +72,10 @@ public class BitcoinService {
                 .build();
     }
 
+    @Cacheable(
+            value = "bitcoin-balances",
+            key = "#root.authentication.name"
+    )
     public WalletDto getWalletBalance() {
         User user = authService.getCurrentUser();
 
