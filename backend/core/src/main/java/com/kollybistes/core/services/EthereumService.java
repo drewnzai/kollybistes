@@ -234,6 +234,19 @@ public class EthereumService {
         ethereumWallet.setBalance(finalBalanceEth);
         ethereumWalletRepository.save(ethereumWallet);
 
+        notificationProducer.sendMail(
+                NotificationEmail.builder()
+                        .recipient(user.getEmail())
+                        .subject("Successful Ethereum Transfer")
+                        .body("You have used " + totalEth.toString()
+                                + " ETH to send " + transactionAmountEth.toString()
+                                + " ETH to wallet address: "
+                                + transactionDto.getRecipientAddress()
+                                + ". Your balance is " + finalBalanceEth.toString() + " ETH.")
+                        .title("Ethereum Wallet Update")
+                        .build()
+        );
+
         Map<String, String> txDetails = new HashMap<>();
         txDetails.put("System's TX Hash", toSystemHash);
         txDetails.put("Recipient's TX Hash", toRecipientHash);

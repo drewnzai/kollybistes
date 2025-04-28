@@ -56,7 +56,8 @@ public class BitcoinService {
                         .recipient(user.getEmail())
                         .subject("Successful Bitcoin Wallet Creation")
                         .title("Updated Kollybistes Account Details")
-                        .body("You have successfully created a Bitcoin wallet, tied to your account with address: "
+                        .body("You have successfully created a Bitcoin wallet," +
+                                " tied to your account with address: "
                                 + bitcoinWallet.getAddress()
                                 + " Do not share these details with anyone.")
                         .build()
@@ -218,9 +219,23 @@ public class BitcoinService {
         transactions.add(toRecipientTransaction);
         transactionRepository.saveAll(transactions);
 
-        bitcoinWallet.setBalance(bitcoinRPC.updateBalance(bitcoinWallet));
+        BigDecimal finalBalanceBtc = bitcoinRPC.updateBalance(bitcoinWallet);
+        bitcoinWallet.setBalance(finalBalanceBtc);
         bitcoinWallet.setTradingLocked(false);
         bitcoinWalletRepository.save(bitcoinWallet);
+
+        notificationProducer.sendMail(
+                NotificationEmail.builder()
+                        .recipient(user.getEmail())
+                        .subject("Successful Bitcoin Transfer")
+                        .body("You have used " + totalBtc.toString()
+                        + " BTC to send " + transactionAmountBtc.toString()
+                        + " BTC to wallet address: "
+                        + transactionDto.getRecipientAddress()
+                        + ". Your balance is " + finalBalanceBtc.toString() + " BTC.")
+                        .title("Bitcoin Wallet Update")
+                        .build()
+        );
 
         Map<String, String> txHashes = new HashMap<>();
         txHashes.put("System's TX Hash", toSystemHash);

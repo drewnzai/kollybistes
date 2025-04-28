@@ -3,7 +3,9 @@ package com.kollybistes.core.services;
 import com.kollybistes.common.dtos.ExchangeDto;
 import com.kollybistes.common.dtos.FeesDto;
 import com.kollybistes.common.models.*;
+import com.kollybistes.common.util.NotificationEmail;
 import com.kollybistes.core.exceptions.*;
+import com.kollybistes.core.kafka.NotificationProducer;
 import com.kollybistes.core.misc.PaginationRequest;
 import com.kollybistes.core.misc.PagingResult;
 import com.kollybistes.core.repositories.BitcoinWalletRepository;
@@ -47,6 +49,7 @@ public class ExchangeService {
     private final AuthService authService;
     private final EthereumWalletRepository ethereumWalletRepository;
     private final BitcoinWalletRepository bitcoinWalletRepository;
+    private final NotificationProducer notificationProducer;
     private final BitcoinRPC bitcoinRPC;
     private final Web3j web3j;
 
@@ -283,6 +286,9 @@ public class ExchangeService {
                 feeRate
         );
 
+        BigDecimal finalBalanceBtc = bitcoinRPC.updateBalance(bitcoinWallet);
+
+        bitcoinWallet.setBalance(finalBalanceBtc);
         bitcoinWallet.setTradingLocked(false);
         bitcoinWalletRepository.save(bitcoinWallet);
 
@@ -295,6 +301,9 @@ public class ExchangeService {
                 gasPriceWei,
                 credentials
                 );
+
+        BigInteger finalBalanceWei = getBalance(ethereumWallet.getAddress());
+        BigDecimal finalBalanceEth = Converter.convertWeiToEth(finalBalanceWei);
 
         Exchange exchange = Exchange.builder()
                 .exchangeType(ExchangeType.BTC_TO_ETH)
@@ -312,6 +321,19 @@ public class ExchangeService {
                 .build();
 
         exchangeRepository.save(exchange);
+
+        notificationProducer.sendMail(
+                NotificationEmail.builder()
+                        .recipient(user.getEmail())
+                        .subject("Successful BTC to ETH Transfer")
+                        .body("You have used " + totalBtc.toString()
+                                + " BTC and gotten " + exchangeDto.getExpectedAmountGotten().toString()
+                                + " ETH"
+                                + ". Your ETH balance is " + finalBalanceEth.toString() + " ETH."
+                                + " Your BTC balance is " + finalBalanceBtc.toString() + " BTC.")
+                        .title("BTC to ETH Transfer")
+                        .build()
+        );
 
         Map<String, String> txHashes = new HashMap<>();
         txHashes.put("Sent BTC", toSystemHash);
@@ -372,6 +394,10 @@ public class ExchangeService {
                 credentials
         );
 
+        BigInteger finalBalanceWei = getBalance(ethereumWallet.getAddress());
+        BigDecimal finalBalanceEth = Converter.convertWeiToEth(finalBalanceWei);
+
+        ethereumWallet.setBalance(finalBalanceEth);
         ethereumWallet.setTradingLocked(false);
         ethereumWalletRepository.save(ethereumWallet);
 
@@ -385,6 +411,10 @@ public class ExchangeService {
                 amountGottenSats,
                 feeRate
         );
+
+        BigDecimal finalBalanceBtc = bitcoinRPC.updateBalance(bitcoinWallet);
+        bitcoinWallet.setBalance(finalBalanceBtc);
+        bitcoinWalletRepository.save(bitcoinWallet);
 
         Exchange exchange = Exchange.builder()
                 .exchangeType(ExchangeType.ETH_TO_BTC)
@@ -402,6 +432,19 @@ public class ExchangeService {
                 .build();
 
         exchangeRepository.save(exchange);
+
+        notificationProducer.sendMail(
+                NotificationEmail.builder()
+                        .recipient(user.getEmail())
+                        .subject("Successful ETH to BTC Transfer")
+                        .body("You have used " + totalEth.toString()
+                                + " ETH and gotten " + exchangeDto.getExpectedAmountGotten().toString()
+                                + " BTC"
+                                + ". Your ETH balance is " + finalBalanceEth.toString() + " ETH."
+                        + " Your BTC balance is " + finalBalanceBtc.toString() + " BTC.")
+                        .title("ETH to BTC Transfer")
+                        .build()
+        );
 
         Map<String, String> txHashes = new HashMap<>();
         txHashes.put("Sent ETH", toSystemHash);
