@@ -45,8 +45,7 @@ public class RedisConfig {
         return redisTemplate;
     }
 
-    @Bean(name = "cacheManager")
-    @Primary
+    @Bean
     public RedisCacheManager cacheManager(RedisTemplate<String, Object> redisTemplate) {
         RedisCacheWriter redisCacheWriter = RedisCacheWriter.
                 nonLockingRedisCacheWriter(Objects.requireNonNull(redisTemplate.getConnectionFactory()));
