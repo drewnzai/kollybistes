@@ -89,6 +89,32 @@ public class EthereumService {
                 .build();
     }
 
+    @Cacheable(
+            value = "ethereum-balances",
+            key = "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()"
+    )
+    public WalletDto getWalletBalance() {
+        User user = authService.getCurrentUser();
+
+        EthereumWallet ethereumWallet = ethereumWalletRepository.findByUser(user)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User does not have an Ethereum wallet"));
+
+        if (ethereumWallet.isTradingLocked()) {
+            throw new WalletLockedException("Wallet is currently in a transaction, try again later");
+        }
+
+        String address = ethereumWallet.getAddress();
+        BigInteger updatedBalanceWei = getBalance(address);
+        BigDecimal updatedBalanceEth = Converter.convertWeiToEth(updatedBalanceWei);
+
+        return WalletDto.builder()
+                .address(address)
+                .balance(updatedBalanceEth)
+                .build();
+
+    }
+
     public TransactionDto calculateTransactionDetails(String recipientAddress, BigDecimal amountInEth) {
 
         if (!ValidationUtil.isValidEthereumAddress(recipientAddress)) {
@@ -250,32 +276,6 @@ public class EthereumService {
         txDetails.put("Recipient's TX Hash", toRecipientHash);
 
         return txDetails;
-    }
-
-    @Cacheable(
-            value = "ethereum-balances",
-            key = "#root.authentication.name"
-    )
-    public WalletDto getWalletBalance() {
-        User user = authService.getCurrentUser();
-
-        EthereumWallet ethereumWallet = ethereumWalletRepository.findByUser(user)
-                .orElseThrow(
-                        () -> new EntityNotFoundException("User does not have an Ethereum wallet"));
-
-        if (ethereumWallet.isTradingLocked()) {
-            throw new WalletLockedException("Wallet is currently in a transaction, try again later");
-        }
-
-        String address = ethereumWallet.getAddress();
-        BigInteger updatedBalanceWei = getBalance(address);
-        BigDecimal updatedBalanceEth = Converter.convertWeiToEth(updatedBalanceWei);
-
-        return WalletDto.builder()
-                .address(address)
-                .balance(updatedBalanceEth)
-                .build();
-
     }
 
     @SneakyThrows

@@ -34,7 +34,7 @@ public class TransactionService {
     @Cacheable(value = "bitcoinTransactions",
             key = "#paginationRequest.page + '-' + " +
                     "#paginationRequest.size + '-' + " +
-                    "#root.authentication.name")
+                    "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()")
     public PagingResult<TransactionDto> getBitcoinTransactions(PaginationRequest paginationRequest){
         User user = authService.getCurrentUser();
 
@@ -63,7 +63,7 @@ public class TransactionService {
     @Cacheable(value = "ethereumTransactions",
             key = "#paginationRequest.page + '-' + " +
                     "#paginationRequest.size + '-' + " +
-                    "#root.authentication.name")
+                    "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()")
     public PagingResult<TransactionDto> getEthereumTransactions(PaginationRequest paginationRequest){
         User user = authService.getCurrentUser();
 
@@ -91,7 +91,7 @@ public class TransactionService {
 
     @CachePut(value = "bitcoinTransactions",
             key = "'0-' + '10-' + " +
-                    "#root.authentication.name")
+                    "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()")
     public PagingResult<TransactionDto> updateBitcoinTransactionsCacheAfterNewTransaction() {
         PaginationRequest paginationRequest = new PaginationRequest(0,
                 10,
@@ -101,7 +101,7 @@ public class TransactionService {
     }
 
     @CachePut(value = "ethereumTransactions", key = "'0-' + '10-' + " +
-            "#root.authentication.name")
+            "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()")
     public PagingResult<TransactionDto> updateEthereumTransactionsCacheAfterNewTransaction() {
         PaginationRequest paginationRequest = new PaginationRequest(0,
                 10,
