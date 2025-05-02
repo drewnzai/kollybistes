@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.kollybistes.core", "com.kollybistes.core.config"})
+@ComponentScan(basePackages = {"com.kollybistes.core"})
 @EntityScan(basePackages = {"com.kollybistes.common.models"})
 @EnableJpaRepositories(basePackages = "com.kollybistes.core.repositories")
 @EnableAsync
