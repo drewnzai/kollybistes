@@ -15,16 +15,16 @@ public class SwaggerConfig {
 
         Contact contact = new Contact();
         contact.setEmail("andrewnzaikombe@gmail.com");
-        contact.setName("Andrew Nzai");
+        contact.setName("Andrew Kombe");
 
-        License mitLicense = new License().name("MIT License").url("https://choosealicense.com/licenses/mit/");
+        License gplv3 = new License().name("GNU General Public License v3.0").url("https://choosealicense.com/licenses/gpl-3.0/");
 
         Info info = new Info()
                 .title("Ethereum-Bitcoin Exchange Backend API")
-                .version("1.0")
+                .version("1.0.0")
                 .contact(contact)
                 .description("This API exposes backend endpoints.")
-                .license(mitLicense);
+                .license(gplv3);
 
         return new OpenAPI().info(info);
     }
