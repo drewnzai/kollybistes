@@ -48,7 +48,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ExchangeService {
     private final ExchangeRepository exchangeRepository;
-    private final APIHandler apiHandler;
+    private final ExternalApiHandler externalApiHandler;
     private final AuthService authService;
     private final EthereumWalletRepository ethereumWalletRepository;
     private final BitcoinWalletRepository bitcoinWalletRepository;
@@ -155,12 +155,12 @@ public class ExchangeService {
         BigInteger amountSat = Converter.convertBtcToSats(amountBtc);
         BigInteger systemTransactionFeeSat = Converter.convertBtcToSats(systemTransactionFeeBtc);
 
-        BigInteger feeRate = apiHandler.getRecommendedBitcoinFee(); // in sat/vB
+        BigInteger feeRate = externalApiHandler.getRecommendedBitcoinFee(); // in sat/vB
         BigInteger estimatedSize = new BigInteger
                 (bitcoinRPC.estimateP2WPKHTransactionSize(1, 2));
         BigInteger networkFeeSat = feeRate.multiply(estimatedSize);
 
-        BigDecimal exchangeRate = apiHandler.getBtcToEthExchangeRate();
+        BigDecimal exchangeRate = externalApiHandler.getBtcToEthExchangeRate();
         BigDecimal expectedReturnEth = amountBtc.multiply(exchangeRate);
 
         BigInteger totalCostSats = amountSat.add(systemTransactionFeeSat).add(networkFeeSat);
@@ -220,11 +220,11 @@ public class ExchangeService {
         BigInteger systemFeeWei = Converter.convertEthToWei(systemFeeEth);
 
         // Estimate gas fees
-        BigInteger gasPriceWei = apiHandler.getRecommendedEthereumGasFee(); // in wei
+        BigInteger gasPriceWei = externalApiHandler.getRecommendedEthereumGasFee(); // in wei
         BigInteger gasLimit = BigInteger.valueOf(21000L);
         BigInteger totalGasFees = gasPriceWei.multiply(gasLimit);
 
-        BigDecimal exchangeRateBtcToEth = apiHandler.getBtcToEthExchangeRate();
+        BigDecimal exchangeRateBtcToEth = externalApiHandler.getBtcToEthExchangeRate();
         BigDecimal exchangeRateEthToBtc = BigDecimal.ONE.divide
                 (exchangeRateBtcToEth, new MathContext(10));
         BigDecimal expectedReturnBtc = exchangeRateEthToBtc.multiply(amountInEth);
@@ -311,7 +311,7 @@ public class ExchangeService {
 
         Credentials credentials = loadSystemWalletCredentials();
 
-        BigInteger gasPriceWei = apiHandler.getRecommendedEthereumGasFee();
+        BigInteger gasPriceWei = externalApiHandler.getRecommendedEthereumGasFee();
 
         String recipientHash = sendEtherToAddress(ethereumWallet.getAddress(),
                 exchangeDto.getExpectedAmountGotten(),
@@ -425,7 +425,7 @@ public class ExchangeService {
         ethereumWallet.setTradingLocked(false);
         ethereumWalletRepository.save(ethereumWallet);
 
-        BigInteger feeRate = apiHandler.getRecommendedBitcoinFee();
+        BigInteger feeRate = externalApiHandler.getRecommendedBitcoinFee();
 
         BigDecimal amountGottenBtc = exchangeDto.getExpectedAmountGotten();
         BigInteger amountGottenSats = Converter.convertBtcToSats(amountGottenBtc);

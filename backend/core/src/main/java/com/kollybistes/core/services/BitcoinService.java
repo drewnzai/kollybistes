@@ -34,7 +34,7 @@ public class BitcoinService {
     private final BitcoinWalletRepository bitcoinWalletRepository;
     private final AuthService authService;
     private final BitcoinRPC bitcoinRPC;
-    private final APIHandler apiHandler;
+    private final ExternalApiHandler externalApiHandler;
     private final TransactionService transactionService;
     private final NotificationProducer notificationProducer;
 
@@ -114,7 +114,7 @@ public class BitcoinService {
         BigDecimal transactionFeeBtc = amountBtc.multiply(TRANSACTION_FEE_PERCENT);
         BigInteger transactionFeeSat = Converter.convertBtcToSats(transactionFeeBtc);
 
-        BigInteger feeRate = apiHandler.getRecommendedBitcoinFee(); // in sat/vB
+        BigInteger feeRate = externalApiHandler.getRecommendedBitcoinFee(); // in sat/vB
         BigInteger estimatedSize = new BigInteger
                 (bitcoinRPC.estimateP2WPKHTransactionSize(1, 2));
         BigInteger networkFeeSat = feeRate.multiply(estimatedSize);

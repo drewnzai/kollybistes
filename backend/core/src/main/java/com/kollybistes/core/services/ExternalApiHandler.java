@@ -3,6 +3,7 @@ package com.kollybistes.core.services;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -11,7 +12,7 @@ import java.math.BigInteger;
 
 @Service
 @RequiredArgsConstructor
-public class APIHandler {
+public class ExternalApiHandler {
 
     private final RestTemplate restTemplate;
 
@@ -27,6 +28,10 @@ public class APIHandler {
     /**
      * Fetches the current BTC/ETH exchange rate from an external API.
      */
+    @Cacheable(
+            value = "recommendations",
+            key = "exchangeRate"
+    )
     public BigDecimal getBtcToEthExchangeRate() {
         try{
             String response = restTemplate.getForObject(exchangeApiUrl, String.class);
@@ -42,6 +47,10 @@ public class APIHandler {
     /**
      * Fetches the recommended Bitcoin transaction fee in sat/vB (satoshis per virtual byte).
      */
+    @Cacheable(
+            value = "recommendations",
+            key = "bitcoin"
+    )
     public BigInteger getRecommendedBitcoinFee() {
         try{
             String response = restTemplate.getForObject(bitcoinFeeApiUrl, String.class);
@@ -59,6 +68,10 @@ public class APIHandler {
      * Fetches the recommended Ethereum gas price (in gwei), converts it to wei (1 gwei = 1,000,000,000 wei),
      * and returns it as a BigInteger.
      */
+    @Cacheable(
+            value = "recommendations",
+            key = "ethereum"
+    )
     public BigInteger getRecommendedEthereumGasFee() {
         try {
             String response = restTemplate.getForObject(ethereumGasApiUrl, String.class);
@@ -76,7 +89,5 @@ public class APIHandler {
             throw new RuntimeException("Failed to get the recommended ETH transaction fee");
         }
     }
-
-
 }
 
