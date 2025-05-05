@@ -132,4 +132,6 @@ Use Postman or Swagger UI (```/swagger-ui/index.html```) to test:
 
 ## 📝 License
 
-GNU GPLv3 — see ```LICENSE.md.```
+Copyright © Andrew Kombe
+
+Licensed under GNU GPLv3 — see ```LICENSE.md.```
