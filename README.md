@@ -99,14 +99,13 @@ Assuming you have installed Maven globally, all modules will use ``` mvn ``` for
 This pulls all the required dependencies and builds the sub-modules
 
 ```bash
-cd backend
 mvn clean install
 ```
 
 ### Core Sub-Module
 
 ```bash
-cd ../core
+cd core
 mvn spring-boot:run
 ```
 Runs at: http://localhost:8080
