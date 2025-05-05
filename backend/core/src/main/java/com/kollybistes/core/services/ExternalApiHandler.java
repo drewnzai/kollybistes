@@ -1,5 +1,6 @@
 package com.kollybistes.core.services;
 
+import com.kollybistes.core.util.Converter;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -83,7 +84,7 @@ public class ExternalApiHandler {
                     .getBigDecimal("cheetah");
 
             // Convert gwei to wei: gwei * 1_000_000_000
-            return gasPriceGwei.multiply(BigDecimal.valueOf(1_000_000_000L)).toBigInteger();
+            return Converter.convertGweiToWei(gasPriceGwei);
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to get the recommended ETH transaction fee");

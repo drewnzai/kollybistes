@@ -20,6 +20,10 @@ public class Converter {
         return Convert.toWei(eth, Convert.Unit.ETHER).toBigInteger();
     }
 
+    public static BigInteger convertGweiToWei(BigDecimal gwei){
+        return Convert.toWei(gwei, Convert.Unit.GWEI).toBigInteger();
+    }
+
     public static BigInteger convertBtcToSats(BigDecimal btc) {
         return btc.multiply(BigDecimal.valueOf(100_000_000L)).toBigInteger();
     }
