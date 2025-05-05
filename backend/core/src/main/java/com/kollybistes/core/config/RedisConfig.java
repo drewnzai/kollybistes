@@ -69,6 +69,9 @@ public class RedisConfig {
                 .withCacheConfiguration("ethereumTransactions",
                         redisCacheConfiguration
                                 .entryTtl(Duration.ofHours(1)))
+                .withCacheConfiguration("recommendations",
+                        redisCacheConfiguration
+                                .entryTtl(Duration.ofHours(1)))
                 .build();
     }
 }
