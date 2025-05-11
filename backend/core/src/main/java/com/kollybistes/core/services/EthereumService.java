@@ -91,7 +91,8 @@ public class EthereumService {
 
     @Cacheable(
             value = "ethereum-balances",
-            key = "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()"
+            key = "T(org.springframework.security.core.context.SecurityContextHolder)" +
+                    ".getContext().getAuthentication().getName()"
     )
     public WalletDto getWalletBalance() {
         User user = authService.getCurrentUser();
