@@ -34,7 +34,8 @@ public class TransactionService {
     @Cacheable(value = "bitcoinTransactions",
             key = "#paginationRequest.page + '-' + " +
                     "#paginationRequest.size + '-' + " +
-                    "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()")
+                    "T(org.springframework.security.core.context.SecurityContextHolder)" +
+                    ".getContext().getAuthentication().getName()")
     public PagingResult<TransactionDto> getBitcoinTransactions(PaginationRequest paginationRequest){
         User user = authService.getCurrentUser();
 
@@ -44,7 +45,8 @@ public class TransactionService {
                 );
         
         final Pageable pageable = PaginationUtil.getPageable(paginationRequest);
-        Page<Transaction> bitcoinTransactions = transactionRepository.findAllBySenderAddress(bitcoinWallet.getAddress(),
+        Page<Transaction> bitcoinTransactions = transactionRepository
+                .findAllBySenderAddress(bitcoinWallet.getAddress(),
                 pageable);
         List<TransactionDto> transactions = bitcoinTransactions
                 .stream()
@@ -63,7 +65,8 @@ public class TransactionService {
     @Cacheable(value = "ethereumTransactions",
             key = "#paginationRequest.page + '-' + " +
                     "#paginationRequest.size + '-' + " +
-                    "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()")
+                    "T(org.springframework.security.core.context.SecurityContextHolder)" +
+                    ".getContext().getAuthentication().getName()")
     public PagingResult<TransactionDto> getEthereumTransactions(PaginationRequest paginationRequest){
         User user = authService.getCurrentUser();
 
@@ -73,7 +76,8 @@ public class TransactionService {
                 );
 
         final Pageable pageable = PaginationUtil.getPageable(paginationRequest);
-        Page<Transaction> ethereumTransactions = transactionRepository.findAllBySenderAddress(ethereumWallet.getAddress(),
+        Page<Transaction> ethereumTransactions = transactionRepository
+                .findAllBySenderAddress(ethereumWallet.getAddress(),
                 pageable);
         List<TransactionDto> transactions = ethereumTransactions
                 .stream()
@@ -91,7 +95,8 @@ public class TransactionService {
 
     @CachePut(value = "bitcoinTransactions",
             key = "'0-' + '10-' + " +
-                    "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()")
+                    "T(org.springframework.security.core.context.SecurityContextHolder)" +
+                    ".getContext().getAuthentication().getName()")
     public PagingResult<TransactionDto> updateBitcoinTransactionsCacheAfterNewTransaction() {
         PaginationRequest paginationRequest = new PaginationRequest(0,
                 10,
@@ -101,7 +106,8 @@ public class TransactionService {
     }
 
     @CachePut(value = "ethereumTransactions", key = "'0-' + '10-' + " +
-            "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()")
+            "T(org.springframework.security.core.context.SecurityContextHolder)" +
+            ".getContext().getAuthentication().getName()")
     public PagingResult<TransactionDto> updateEthereumTransactionsCacheAfterNewTransaction() {
         PaginationRequest paginationRequest = new PaginationRequest(0,
                 10,
