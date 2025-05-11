@@ -14,12 +14,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-
-    /* HttpStatus.BAD_REQUEST 400
+    
+    /*
+    HttpStatus.BAD_REQUEST 400
     HttpStatus.UNAUTHORIZED 401
     HttpStatus.NOT_FOUND 404
-    HttpStatus.INTERNAL_SERVER_ERROR 500*/
+    HttpStatus.INTERNAL_SERVER_ERROR 500
+    */
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException e) {
