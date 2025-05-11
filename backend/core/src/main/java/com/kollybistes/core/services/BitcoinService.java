@@ -74,7 +74,8 @@ public class BitcoinService {
 
     @Cacheable(
             value = "bitcoin-balances",
-            key = "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()"
+            key = "T(org.springframework.security.core.context.SecurityContextHolder)" +
+                    ".getContext().getAuthentication().getName()"
     )
     public WalletDto getWalletBalance() {
         User user = authService.getCurrentUser();
