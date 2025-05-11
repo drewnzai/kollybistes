@@ -154,13 +154,10 @@ public class AuthService {
                     , refreshTokenRequest.getUsername()
                     , refreshTokenRequest.getRefreshToken());
         }
-        else if(!isNotExpired){
+        else {
             refreshTokenRepository.deleteByToken(refreshTokenRequest.getRefreshToken());
 
             throw new ExpiredTokenException("Refresh Token has expired");
-        }
-        else {
-            throw new IllegalFormatException("Refresh Token is not valid");
         }
     }
 
