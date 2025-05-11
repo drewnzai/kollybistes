@@ -17,7 +17,8 @@ public class SwaggerConfig {
         contact.setEmail("andrewnzaikombe@gmail.com");
         contact.setName("Andrew Kombe");
 
-        License gplv3 = new License().name("GNU General Public License v3.0").url("https://choosealicense.com/licenses/gpl-3.0/");
+        License gplv3 = new License().name("GNU General Public License v3.0")
+                .url("https://choosealicense.com/licenses/gpl-3.0/");
 
         Info info = new Info()
                 .title("Ethereum-Bitcoin Exchange Backend API")
