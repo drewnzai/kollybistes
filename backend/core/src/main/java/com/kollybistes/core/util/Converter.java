@@ -1,16 +1,15 @@
 package com.kollybistes.core.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.web3j.utils.Convert;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Converter {
-
-    private Converter(){
-        // Utility class
-    }
 
     public static BigDecimal convertWeiToEth(BigInteger wei){
         return Convert.fromWei(wei.toString(), Convert.Unit.ETHER);
