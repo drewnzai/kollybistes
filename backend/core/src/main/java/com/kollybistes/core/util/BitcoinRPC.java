@@ -151,6 +151,7 @@ public class BitcoinRPC {
                 .getUsername());
     }
 
+    // used to estimate a transaction's size
     public String estimateP2WPKHTransactionSize(int inputCount, int outputCount) {
         final int TX_OVERHEAD = 11;             // Version + locktime + input/output counts
         final int P2WPKH_INPUT_SIZE = 68;       // P2WPKH input size in vbytes
