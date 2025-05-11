@@ -360,8 +360,8 @@ public class ExchangeService {
         );
 
         Map<String, String> txHashes = new HashMap<>();
-        txHashes.put("Sent BTC", toSystemHash);
-        txHashes.put("Received ETH", recipientHash);
+        txHashes.put("Sent BTC TxHash", toSystemHash);
+        txHashes.put("Received ETH TxHash", recipientHash);
 
         return txHashes;
     }
@@ -478,8 +478,8 @@ public class ExchangeService {
         );
 
         Map<String, String> txHashes = new HashMap<>();
-        txHashes.put("Sent ETH", toSystemHash);
-        txHashes.put("Received BTC", recipientHash);
+        txHashes.put("Sent ETH TxHash", toSystemHash);
+        txHashes.put("Received BTC TxHash", recipientHash);
 
         return txHashes;
     }
